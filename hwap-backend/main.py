@@ -6,6 +6,9 @@ from database.session import init_db
 from routers import auth, handshake, comms, signing, audit, system, quantum_router
 
 
+from fastapi.responses import FileResponse
+import os
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Initialize DB on startup."""
@@ -14,6 +17,11 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="QUANTA Backend API", lifespan=lifespan)
+
+@app.get("/")
+async def serve_frontend():
+    frontend_index = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "frontend", "index.html"))
+    return FileResponse(frontend_index)
 
 app.add_middleware(
     CORSMiddleware,
