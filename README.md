@@ -10,8 +10,21 @@
 
 ---
 
+## 🌐 Quick Access URLs (Local Running Services)
+
+| Service | Direct Link | Description |
+| :--- | :--- | :--- |
+| **Interactive Dashboard (Web UI)** | **[http://127.0.0.1:3000](http://127.0.0.1:3000)** | Full visual dashboard (Registration, Keys, Live Demo, Audit, Threat Lab) |
+| **FastAPI Root (Direct UI)** | **[http://127.0.0.1:8000/](http://127.0.0.1:8000/)** | Root backend endpoint serving the dashboard |
+| **Interactive Swagger API Docs** | **[http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)** | Test every REST API endpoint interactively with Swagger UI |
+| **ReDoc API Documentation** | **[http://127.0.0.1:8000/redoc](http://127.0.0.1:8000/redoc)** | Clean API reference schema |
+| **API Health Status** | **[http://127.0.0.1:8000/api/health](http://127.0.0.1:8000/api/health)** | Real-time JSON health check & active security tier |
+
+---
+
 ## 📑 Table of Contents
 
+- [Quick Access URLs](#-quick-access-urls-local-running-services)
 - [Overview & Architecture](#-overview--architecture)
 - [Tech Stack & System Requirements](#-tech-stack--system-requirements)
 - [Quickstart Guide](#-quickstart-guide)
@@ -136,17 +149,16 @@ Verify backend health at: [http://127.0.0.1:8000/api/health](http://127.0.0.1:80
 
 ### 3. Frontend Launch
 
-No npm build step is required. Simply open `frontend/index.html` in your modern web browser:
+Launch the static server or open the dashboard directly in your browser:
+
+- **Local Web Server:** [http://127.0.0.1:3000](http://127.0.0.1:3000)
+- **FastAPI Root UI:** [http://127.0.0.1:8000/](http://127.0.0.1:8000/)
+- **Interactive Swagger Docs:** [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
 
 ```bash
-# On macOS
-open ../frontend/index.html
-
-# On Linux
-xdg-open ../frontend/index.html
-
-# Or via any local static server (optional):
-# npx serve ../frontend
+# Serve frontend on port 3000
+cd frontend
+python -m http.server 3000
 ```
 
 ---

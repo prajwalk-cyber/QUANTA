@@ -41,3 +41,6 @@ wheels/
 
 # liboqs runtime compilation artifacts
 ~/_oqs
+cmake*
+*.tar.gz
+
