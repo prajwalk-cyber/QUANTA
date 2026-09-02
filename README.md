@@ -14,7 +14,8 @@
 
 | Service | Direct Link | Description |
 | :--- | :--- | :--- |
-| **Interactive Dashboard (Web UI)** | **[http://127.0.0.1:3000](http://127.0.0.1:3000)** | Full visual dashboard (Registration, Keys, Live Demo, Audit, Threat Lab) |
+| **QUANTA Secure Chat (POC Client)** | **[http://127.0.0.1:3000/chat/index.html](http://127.0.0.1:3000/chat/index.html)** | **Proof-of-Concept Client: Real-world app consuming QUANTA Security APIs** |
+| **Interactive Dashboard (Web UI)** | **[http://127.0.0.1:3000](http://127.0.0.1:3000)** | Full protocol dashboard (Registration, Keys, Live Demo, Audit, Threat Lab) |
 | **FastAPI Root (Direct UI)** | **[http://127.0.0.1:8000/](http://127.0.0.1:8000/)** | Root backend endpoint serving the dashboard |
 | **Interactive Swagger API Docs** | **[http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)** | Test every REST API endpoint interactively with Swagger UI |
 | **ReDoc API Documentation** | **[http://127.0.0.1:8000/redoc](http://127.0.0.1:8000/redoc)** | Clean API reference schema |
@@ -26,6 +27,7 @@
 
 - [Quick Access URLs](#-quick-access-urls-local-running-services)
 - [Overview & Architecture](#-overview--architecture)
+- [QUANTA Secure Chat (POC Client Integration)](#-quanta-secure-chat--proof-of-concept-client)
 - [Tech Stack & System Requirements](#-tech-stack--system-requirements)
 - [Quickstart Guide](#-quickstart-guide)
   - [1. Prerequisites Installation](#1-prerequisites-installation)
@@ -36,6 +38,7 @@
 - [HNDLR-Score Model](#-hndlr-score-model)
 - [REST API Reference](#-rest-api-reference)
 - [Project Directory Structure](#-project-directory-structure)
+- [Quantum Threat Lab](#-quantum-threat-lab)
 - [Benchmarks vs. TLS 1.3](#-benchmarks-vs-tls-13)
 - [License](#-license)
 
@@ -43,12 +46,12 @@
 
 ## 🛡️ Overview & Architecture
 
-**QUANTA (Quantum-Resistant Authenticated Network & Transaction Architecture)** is an application-layer post-quantum cryptographic protocol designed to protect sensitive web communication today against future quantum computer decryption capabilities.
+**QUANTA (Quantum-Resistant Authenticated Network & Transaction Architecture)** is an API-first post-quantum cryptographic security layer designed to protect sensitive application communications today against future quantum computer decryption capabilities.
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                         QUANTA Interactive Frontend                         │
-│               (Vanilla HTML5 / Modern CSS / ES6+ Fetch Client)              │
+│                           External Client Applications                      │
+│               QUANTA Secure Chat  │  Healthcare  │  Banking / FinTech       │
 └──────────────────────────────────────┬──────────────────────────────────────┘
                                        │ Real REST API (JSON)
                                        ▼
@@ -64,7 +67,7 @@
 │     liboqs-python (C-Bindings)        │ │        Python Cryptography        │
 │  • ML-KEM-768 (Kyber768 / FIPS 203)   │ │  • X25519 Elliptic Curve ECDH     │
 │  • ML-DSA-65 (Dilithium3 / FIPS 204)  │ │  • HKDF-SHA3-256 Key Derivation   │
-│                                       │ │  • AES-256-GCM AEAD Encryption    │
+│  • NIST Security Level 3 Strength     │ │  • AES-256-GCM AEAD Encryption    │
 └───────────────────────────────────────┘ └───────────────────────────────────┘
 ```
 
@@ -74,6 +77,32 @@
 - **Session Hybrid Security Token (SHST):** Reusable authenticated session tokens that reduce subsequent handshake overhead by **83%**.
 - **Live Crypto-Agility Engine:** Instant runtime switching between 4 security tiers without server restarts.
 - **Server-Side Real-Time Audit Log:** In-memory event ledger capturing every cryptographic operation with millisecond-accurate timestamps.
+
+---
+
+## 💬 QUANTA Secure Chat — Proof-of-Concept Client
+
+The **QUANTA Secure Chat Demo Client** ([frontend/chat/index.html](frontend/chat/index.html)) is a proof-of-concept client demonstrating how an external communication application integrates with QUANTA's Post-Quantum Security APIs without needing to implement internal cryptography.
+
+```text
+Alice (Sender)                         QUANTA REST API                        Bob (Receiver)
+      │                                       │                                     │
+      │ 1. Plaintext Message                  │                                     │
+      ├──────────────────────────────────────>│                                     │
+      │                                       │ 2. ML-DSA-65 Signature Generated    │
+      │                                       │ 3. AES-256-GCM Encrypted            │
+      │                                       │ 4. Transmitted Wire Payload         │
+      │                                       ├────────────────────────────────────>│
+      │                                       │                                     │ 5. AES-GCM Decrypted
+      │                                       │                                     │ 6. ML-DSA Verified
+      │                                       │                                     │ 7. Integrity Confirmed ✓
+```
+
+### Key Demonstration Features
+1. **Zero-Key-Leakage UI**: Private keys, decapsulation secrets, and raw hybrid secrets never leave the backend. Only safe metadata (Signature IDs, truncated nonces/ciphertexts, SHST status) is displayed.
+2. **Live Protocol Activity Timeline**: Step-by-step visual animation tracing each message through creation, signing, encryption, routing, decryption, and signature verification.
+3. **Runtime Crypto-Agility Switcher**: One-click switching between **Tier 1 Full PQC Hybrid (ML-KEM-768 + ML-DSA-65)** and **Tier 4 Classical (X25519 + ECDSA)**.
+4. **Network Tampering Simulation**: An interactive security test modifying in-flight ciphertext to demonstrate immediate GCM tag verification failure and delivery prevention (`MESSAGE REJECTED: CRYPTOGRAPHIC INTEGRITY VIOLATION`).
 
 ---
 
@@ -136,36 +165,26 @@ uvicorn main:app --reload --host 127.0.0.1 --port 8000
 ```
 
 Verify backend health at: [http://127.0.0.1:8000/api/health](http://127.0.0.1:8000/api/health)
-```json
-{
-  "status": "ok",
-  "active_tier": 1,
-  "liboqs_version": "0.10.0",
-  "uptime_s": 12.45
-}
-```
 
 ---
 
 ### 3. Frontend Launch
 
-Launch the static server or open the dashboard directly in your browser:
-
-- **Local Web Server:** [http://127.0.0.1:3000](http://127.0.0.1:3000)
-- **FastAPI Root UI:** [http://127.0.0.1:8000/](http://127.0.0.1:8000/)
-- **Interactive Swagger Docs:** [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
+Serve the frontend client directory using Python's built-in HTTP server:
 
 ```bash
-# Serve frontend on port 3000
+# From workspace root
 cd frontend
-python -m http.server 3000
+python3 -m http.server 3000
 ```
+
+- **QUANTA Secure Chat POC Client:** [http://127.0.0.1:3000/chat/index.html](http://127.0.0.1:3000/chat/index.html)
+- **QUANTA Protocol Dashboard:** [http://127.0.0.1:3000](http://127.0.0.1:3000)
+- **Interactive Swagger Docs:** [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
 
 ---
 
 ## 🔄 End-to-End Workflow
-
-The interactive dashboard guides you through the full cryptographic lifecycle:
 
 1. **User Identity Registration (`/api/register`):** Creates an authenticated identity and generates a UUID v4 session principal.
 2. **Post-Quantum Keypair Generation (`/api/generate-keys/*`):**
@@ -178,7 +197,7 @@ The interactive dashboard guides you through the full cryptographic lifecycle:
    - Issues an SHST token (valid 3600s).
    - Reports live millisecond performance breakdown.
 4. **Crypto-Agility Tier Switching (`/api/switch-tier`):** Switch between Full Hybrid, KEM-only, Sig-only, and Classical tiers with zero downtime.
-5. **Authenticated Encryption (`/api/encrypt` & `/api/decrypt`):** Real AES-256-GCM AEAD encryption, simulated delivery, and decryption with integrity validation.
+5. **Authenticated Encryption (`/api/encrypt` & `/api/decrypt`):** Real AES-256-GCM AEAD encryption, delivery, and decryption with integrity validation.
 6. **Post-Quantum Message Signing (`/api/sign`):** Generates real 3,293-byte ML-DSA-65 signatures over arbitrary payloads.
 7. **Verification Portal (`/api/verify`):** Verifies cryptographic signature authenticity and includes interactive **tampering simulation**.
 8. **Real-Time Audit Ledger (`/api/audit`):** Inspects live server-side audit logs with filtering and search.
@@ -245,7 +264,20 @@ QUANTA/
 ├── LICENSE                         # MIT License
 ├── README.md                       # Master documentation
 ├── frontend/
-│   └── index.html                  # Interactive Dashboard (HTML5 / Vanilla CSS / Fetch API)
+│   ├── index.html                  # Master Protocol Dashboard
+│   └── chat/                       # QUANTA Secure Chat POC Client
+│       ├── index.html              # Secure Chat UI Layout & Workspace
+│       ├── css/
+│       │   ├── theme.css           # Design tokens, typography & badges
+│       │   ├── layout.css          # Responsive 2-column grid & modal overlay
+│       │   ├── chat.css            # Chat feed, participant flow & composer
+│       │   └── security.css        # Security channel card, timeline & tamper styles
+│       └── js/
+│           ├── state.js            # Zero-Key-Exposure state manager
+│           ├── api.js              # REST client for QUANTA FastAPI endpoints
+│           ├── chat.js             # Message rendering & cryptographic orchestration
+│           ├── security.js         # Timeline animator & network tampering simulator
+│           └── app.js              # App bootstrap & channel initialization
 └── hwap-backend/
     ├── crypto/
     │   ├── kdf.py                  # HKDF-SHA3-256 key combiner
@@ -278,7 +310,7 @@ QUANTA/
 
 ## 🧪 Quantum Threat Lab
 
-QUANTA features an educational **Quantum Threat Lab** to demonstrate the mechanics of quantum-safe migration.
+QUANTA features an educational **Quantum Threat Lab** to demonstrate the mechanics of quantum-safe migration:
 
 1. **Shor's Algorithm Simulation:**
    - **Interactive picker** for semi-primes $N$ ($15, 21, 35, 77$) and coprime base $a$.
