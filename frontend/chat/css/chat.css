@@ -1,0 +1,307 @@
+/* Chat Interface Components */
+
+/* Participant Header */
+.chat-participant-header {
+  padding: 12px 18px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.participants-flow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.participant-node {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 12px;
+  background: var(--surface-raised);
+  border: 1px solid var(--border-subtle);
+}
+
+.avatar.alice {
+  background: rgba(34, 197, 94, 0.15);
+  color: var(--accent);
+  border-color: var(--green-border);
+}
+
+.avatar.bob {
+  background: rgba(139, 92, 246, 0.15);
+  color: #A78BFA;
+  border-color: var(--purple-border);
+}
+
+.node-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.node-name {
+  font-weight: 700;
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+.node-role {
+  font-size: 10px;
+  color: var(--text-secondary);
+  font-family: var(--mono);
+}
+
+.channel-pipe {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: rgba(34, 197, 94, 0.06);
+  border: 1px dashed var(--green-border);
+  border-radius: var(--radius-full);
+  font-size: 10px;
+  color: var(--accent-light);
+  font-family: var(--mono);
+}
+
+.channel-pipe svg {
+  animation: pipeFlow 2s linear infinite;
+}
+
+@keyframes pipeFlow {
+  0% { transform: translateX(-3px); }
+  50% { transform: translateX(3px); }
+  100% { transform: translateX(-3px); }
+}
+
+/* Chat Messages Feed */
+.chat-feed-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.system-banner {
+  text-align: center;
+  margin: 0 auto 8px auto;
+  padding: 6px 14px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  color: var(--text-secondary);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.message-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-width: 82%;
+  animation: slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.message-group.sender {
+  align-self: flex-start;
+}
+
+.message-group.receiver {
+  align-self: flex-end;
+}
+
+.message-author {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 2px;
+}
+
+.message-group.receiver .message-author {
+  justify-content: flex-end;
+}
+
+.message-bubble {
+  padding: 12px 16px;
+  border-radius: var(--radius);
+  font-size: 13px;
+  line-height: 1.5;
+  position: relative;
+  word-break: break-word;
+}
+
+.message-group.sender .message-bubble {
+  background: var(--card);
+  border: 1px solid var(--border-subtle);
+  color: var(--text);
+  border-top-left-radius: 4px;
+}
+
+.message-group.receiver .message-bubble {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.12), rgba(139, 92, 246, 0.12));
+  border: 1px solid var(--green-border);
+  color: var(--text);
+  border-top-right-radius: 4px;
+}
+
+.message-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  font-size: 10px;
+  font-family: var(--mono);
+  color: var(--text-secondary);
+  flex-wrap: wrap;
+}
+
+.message-group.receiver .message-meta {
+  justify-content: flex-end;
+}
+
+.security-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  font-size: 9.5px;
+}
+
+.security-tag.valid {
+  background: var(--green-bg);
+  color: var(--green);
+  border: 1px solid var(--green-border);
+}
+
+.security-tag.rejected {
+  background: var(--red-bg);
+  color: var(--red);
+  border: 1px solid var(--red-border);
+}
+
+/* Quick Prompts Bar */
+.quick-prompts {
+  padding: 8px 18px 0 18px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  flex-shrink: 0;
+}
+
+.quick-prompts-label {
+  font-size: 10px;
+  font-family: var(--mono);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.prompt-chip {
+  background: var(--card);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: var(--transition);
+}
+
+.prompt-chip:hover {
+  background: var(--card-hover);
+  color: var(--text);
+  border-color: var(--border-strong);
+}
+
+/* Composer */
+.chat-composer-area {
+  padding: 12px 18px 16px 18px;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.composer-form {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 6px 8px 6px 14px;
+  transition: var(--transition);
+}
+
+.composer-form:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-bg);
+}
+
+.composer-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 13px;
+}
+
+.composer-input::placeholder {
+  color: var(--text-muted);
+}
+
+.btn-send {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: var(--accent);
+  color: #050507;
+  font-weight: 700;
+  font-size: 12px;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.btn-send:hover:not(:disabled) {
+  background: var(--accent-light);
+  box-shadow: 0 0 14px var(--accent-glow);
+  transform: translateY(-1px);
+}
+
+.btn-send:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

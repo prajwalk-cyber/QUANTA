@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QUANTA Secure Chat — Post-Quantum API Demo Client</title>
+  
+  <!-- CSS Stylesheets -->
+  <link rel="stylesheet" href="css/theme.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/chat.css">
+  <link rel="stylesheet" href="css/security.css">
+</head>
+<body>
+  <!-- Ambient background lighting -->
+  <div class="bg-glow bg-glow-1"></div>
+  <div class="bg-glow bg-glow-2"></div>
+
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="header-brand">
+        <div class="brand-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+        </div>
+        <div class="brand-title">
+          <div class="brand-name">
+            QUANTA SECURE CHAT
+            <span class="badge badge-purple">POC CLIENT</span>
+          </div>
+          <div class="brand-sub">External Application Integration via QUANTA Post-Quantum Security API</div>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <a href="../index.html" class="nav-link-btn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"/>
+            <rect x="14" y="3" width="7" height="7"/>
+            <rect x="14" y="14" width="7" height="7"/>
+            <rect x="3" y="14" width="7" height="7"/>
+          </svg>
+          Protocol Dashboard
+        </a>
+        <div class="badge badge-green" id="api-status-badge">
+          <span class="pulse-dot"></span> QUANTA API CONNECTED
+        </div>
+      </div>
+    </header>
+
+    <!-- Two-Column Workspace -->
+    <main class="main-workspace">
+      
+      <!-- LEFT COLUMN: Chat Application Area -->
+      <section class="panel-chat">
+        
+        <!-- Participant Header -->
+        <div class="chat-participant-header">
+          <div class="participants-flow">
+            <!-- Alice -->
+            <div class="participant-node">
+              <div class="avatar alice">A</div>
+              <div class="node-info">
+                <span class="node-name">Alice</span>
+                <span class="node-role">Sender Endpoint</span>
+              </div>
+            </div>
+
+            <!-- Pipe Connection -->
+            <div class="channel-pipe">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="9 18 15 12 9 6"/>
+              </svg>
+              <span>QUANTA Secure Channel</span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="9 18 15 12 9 6"/>
+              </svg>
+            </div>
+
+            <!-- Bob -->
+            <div class="participant-node">
+              <div class="avatar bob">B</div>
+              <div class="node-info">
+                <span class="node-name">Bob</span>
+                <span class="node-role">Receiver Endpoint</span>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <span class="badge badge-green">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+              Channel Active
+            </span>
+          </div>
+        </div>
+
+        <!-- Chat History Feed -->
+        <div class="chat-feed-container" id="chat-feed">
+          <!-- Dynamic messages will be appended here -->
+        </div>
+
+        <!-- Quick Prompts for Demonstration -->
+        <div class="quick-prompts">
+          <span class="quick-prompts-label">QUICK PROMPTS:</span>
+          <button class="prompt-chip" data-text="Confidential patient record approved for transfer.">🏥 Healthcare Patient Record</button>
+          <button class="prompt-chip" data-text="Wire transfer authorization code #8492 validated.">💳 Banking Wire Authorization</button>
+          <button class="prompt-chip" data-text="Quantum-resilient key rotation scheduled for 00:00 UTC.">🔐 Enterprise Key Rotation</button>
+        </div>
+
+        <!-- Composer Area -->
+        <div class="chat-composer-area">
+          <form class="composer-form" id="chat-composer-form">
+            <input 
+              type="text" 
+              class="composer-input" 
+              id="chat-input" 
+              placeholder="Type a secure message (e.g. Confidential medical clearance...)" 
+              autocomplete="off"
+            />
+            <button type="submit" class="btn-send" id="btn-send">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+              <span>SEND SECURELY</span>
+            </button>
+          </form>
+        </div>
+
+      </section>
+
+      <!-- RIGHT COLUMN: QUANTA Security Channel & Protocol Timeline -->
+      <section class="panel-security">
+        <div class="security-panel-content">
+          
+          <!-- QUANTA Channel Header -->
+          <div class="panel-section-header">
+            <div class="panel-title">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              </svg>
+              QUANTA Security Channel
+            </div>
+            <span class="badge badge-green">HYBRID ACTIVE</span>
+          </div>
+
+          <!-- Session Info Card -->
+          <div class="security-card">
+            <div class="card-header-row">
+              <span style="font-weight: 700; font-size: 11.5px; color: var(--text);">ACTIVE SESSION STATE</span>
+              <span class="badge badge-purple" id="sec-tier-name">NIST Level 3 · Post-Quantum</span>
+            </div>
+
+            <div class="session-info-grid">
+              <div class="info-item">
+                <span class="info-label">Session ID</span>
+                <span class="info-value" id="sec-session-id">Establishing...</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">SHST Status</span>
+                <span class="info-value highlight" id="sec-shst-status">Active (1.2ms)</span>
+              </div>
+            </div>
+
+            <!-- Algorithm Matrix -->
+            <div class="algo-matrix">
+              <div class="algo-row">
+                <span class="algo-name">Hybrid KEM Exchange</span>
+                <span class="algo-spec" id="sec-kem-algo">ML-KEM-768 + X25519</span>
+              </div>
+              <div class="algo-row">
+                <span class="algo-name">Digital Signature</span>
+                <span class="algo-spec" id="sec-sig-algo">ML-DSA-65</span>
+              </div>
+              <div class="algo-row">
+                <span class="algo-name">Payload Encryption</span>
+                <span class="algo-spec" id="sec-enc-algo">AES-256-GCM</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Crypto-Agility Tier Selector -->
+          <div class="tier-switcher-container">
+            <div class="panel-title" style="font-size: 11px; margin-bottom: 2px;">
+              <span>RUNTIME CRYPTO-AGILITY TIER</span>
+            </div>
+            <div class="tier-select-box">
+              <button class="tier-btn active" data-tier="1">
+                <div class="tier-btn-title">
+                  <span>Tier 1 Hybrid</span>
+                  <span class="badge badge-green" style="padding: 1px 5px; font-size: 9px;">PQC</span>
+                </div>
+                <div class="tier-btn-sub">ML-KEM-768 + ML-DSA-65</div>
+              </button>
+
+              <button class="tier-btn" data-tier="4">
+                <div class="tier-btn-title">
+                  <span>Tier 4 Classical</span>
+                  <span class="badge badge-amber" style="padding: 1px 5px; font-size: 9px;">LEGACY</span>
+                </div>
+                <div class="tier-btn-sub">X25519 + ECDSA</div>
+              </button>
+            </div>
+          </div>
+
+          <!-- Live Protocol Timeline -->
+          <div class="timeline-container">
+            <div class="panel-section-header" style="margin-bottom: 0;">
+              <div class="panel-title" style="font-size: 11px;">
+                <span>LIVE PROTOCOL ACTIVITY</span>
+              </div>
+              <span class="badge badge-blue">REST API</span>
+            </div>
+
+            <div class="timeline-list" id="protocol-timeline">
+              <!-- Dynamically populated by security.js -->
+            </div>
+          </div>
+
+          <!-- Security Test: Tampering Simulation -->
+          <div class="tamper-test-card">
+            <div class="tamper-header">
+              <div>
+                <div style="font-weight: 700; font-size: 12px; color: var(--red);">SECURITY TEST: INTEGRITY PROOF</div>
+                <div style="font-size: 10.5px; color: var(--text-secondary); margin-top: 2px;">
+                  Simulate in-flight network tampering to demonstrate QUANTA rejection.
+                </div>
+              </div>
+            </div>
+            <button class="btn-tamper" id="btn-tamper">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/>
+                <line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+              <span>SIMULATE NETWORK TAMPERING</span>
+            </button>
+          </div>
+
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Tampering Simulation Modal Overlay -->
+  <div class="modal-overlay" id="tamper-modal-overlay">
+    <div class="tamper-modal">
+      <div class="modal-header">
+        <div class="modal-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/>
+            <line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+          SIMULATE IN-FLIGHT NETWORK TAMPERING
+        </div>
+        <button id="btn-close-tamper" style="background: none; border: none; color: var(--text-secondary); font-size: 18px; cursor: pointer;">✕</button>
+      </div>
+
+      <div style="font-size: 12px; color: var(--text-secondary); line-height: 1.6;">
+        This test modifies a single byte in the encrypted AES-256-GCM ciphertext payload while in transit. When Bob receives the modified frame, QUANTA will perform cryptographic tag authentication and ML-DSA signature verification.
+      </div>
+
+      <div>
+        <div style="font-size: 10.5px; font-family: var(--mono); color: var(--text-muted); margin-bottom: 4px;">ORIGINAL CIPHERTEXT FRAME</div>
+        <div class="code-box">8fa3c91b7e4492a81cf200e4b8612... (Valid Tag)</div>
+      </div>
+
+      <div>
+        <div style="font-size: 10.5px; font-family: var(--mono); color: var(--red); margin-bottom: 4px;">TAMPERED IN-FLIGHT PAYLOAD</div>
+        <div class="code-box tampered">8fa3c91c7e4492a81cf200e4b8612... (Byte 0x1B corrupted)</div>
+      </div>
+
+      <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 6px;">
+        <button class="nav-link-btn" onclick="Security.hideTamperModal()">Cancel</button>
+        <button class="btn-tamper" id="btn-execute-tamper" style="padding: 8px 16px;">
+          Execute Tampering Attack
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript Modules -->
+  <script src="js/state.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/security.js"></script>
+  <script src="js/chat.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,173 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+:root {
+  --bg: #050507;
+  --surface: #0E0E10;
+  --surface-raised: #141418;
+  --card: #121214;
+  --card-hover: #17171C;
+  --card-glass: rgba(18, 18, 20, 0.75);
+  
+  --border: rgba(34, 197, 94, 0.1);
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-strong: rgba(34, 197, 94, 0.28);
+  --border-danger: rgba(239, 68, 68, 0.35);
+  
+  --text: #F3F4F6;
+  --text-secondary: #9CA3AF;
+  --text-muted: #52525B;
+  
+  --accent: #22C55E;
+  --accent-light: #4ADE80;
+  --accent-bg: rgba(34, 197, 94, 0.08);
+  --accent-glow: rgba(34, 197, 94, 0.25);
+  
+  --green: #22C55E;
+  --green-bg: rgba(34, 197, 94, 0.08);
+  --green-border: rgba(34, 197, 94, 0.2);
+  
+  --amber: #F59E0B;
+  --amber-bg: rgba(245, 158, 11, 0.08);
+  --amber-border: rgba(245, 158, 11, 0.25);
+  
+  --red: #EF4444;
+  --red-bg: rgba(239, 68, 68, 0.08);
+  --red-border: rgba(239, 68, 68, 0.3);
+  
+  --purple: #8B5CF6;
+  --purple-bg: rgba(139, 92, 246, 0.08);
+  --purple-border: rgba(139, 92, 246, 0.25);
+  
+  --blue: #3B82F6;
+  --blue-bg: rgba(59, 130, 246, 0.08);
+  --blue-border: rgba(59, 130, 246, 0.25);
+  
+  --cyan: #06B6D4;
+  --cyan-bg: rgba(6, 182, 212, 0.08);
+
+  --radius-sm: 8px;
+  --radius: 12px;
+  --radius-lg: 16px;
+  --radius-full: 9999px;
+  
+  --font: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --mono: 'JetBrains Mono', 'SF Mono', monospace;
+  
+  --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(34, 197, 94, 0.16);
+  border-radius: var(--radius-full);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(34, 197, 94, 0.35);
+}
+
+/* Subtle background glow effect */
+.bg-glow {
+  position: fixed;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  filter: blur(140px);
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.12;
+}
+
+.bg-glow-1 {
+  top: -150px;
+  left: 20%;
+  background: radial-gradient(circle, var(--accent) 0%, transparent 70%);
+}
+
+.bg-glow-2 {
+  bottom: -200px;
+  right: 15%;
+  background: radial-gradient(circle, var(--purple) 0%, transparent 70%);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: var(--radius-full);
+  font-family: var(--mono);
+  letter-spacing: -0.2px;
+}
+
+.badge-green {
+  background: var(--green-bg);
+  color: var(--green);
+  border: 1px solid var(--green-border);
+}
+
+.badge-purple {
+  background: var(--purple-bg);
+  color: #A78BFA;
+  border: 1px solid var(--purple-border);
+}
+
+.badge-amber {
+  background: var(--amber-bg);
+  color: var(--amber);
+  border: 1px solid var(--amber-border);
+}
+
+.badge-blue {
+  background: var(--blue-bg);
+  color: #60A5FA;
+  border: 1px solid var(--blue-border);
+}
+
+.badge-red {
+  background: var(--red-bg);
+  color: var(--red);
+  border: 1px solid var(--red-border);
+}
+
+.pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 8px currentColor;
+  animation: pulseAnim 2s infinite ease-in-out;
+}
+
+@keyframes pulseAnim {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.45; transform: scale(0.85); }
+}
