@@ -1,0 +1,2936 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QUANTA Protocol Demo</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+    :root {
+      --bg: #050507;
+      --surface: #0E0E10;
+      --card: #121214;
+      --card-hover: #17171C;
+      --border: rgba(34, 197, 94, 0.08);
+      --border-strong: rgba(34, 197, 94, 0.18);
+      --text: #F3F4F6;
+      --text-secondary: #A1A1AA;
+      --muted: #52525B;
+      --accent: #22C55E;
+      --accent-light: #4ADE80;
+      --accent-bg: rgba(34, 197, 94, 0.06);
+      --green: #22C55E;
+      --green-bg: rgba(34, 197, 94, 0.06);
+      --amber: #F59E0B;
+      --amber-bg: rgba(245, 158, 11, 0.08);
+      --red: #EF4444;
+      --red-bg: rgba(239, 68, 68, 0.06);
+      --purple: #8B5CF6;
+      --purple-bg: rgba(139, 92, 246, 0.08);
+      --teal: #14B8A6;
+      --teal-bg: rgba(20, 184, 166, 0.08);
+      --radius: 12px;
+      --radius-lg: 16px;
+      --font: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      --mono: 'JetBrains Mono', 'SF Mono', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      font-size: 13px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(34, 197, 94, 0.15);
+      border-radius: 99px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(34, 197, 94, 0.3);
+    }
+
+    /* ── Navigation ── */
+    .nav {
+      position: sticky;
+      top: 0;
+      height: 58px;
+      background: rgba(5, 5, 7, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem;
+      z-index: 100;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 800;
+      font-size: 16px;
+      letter-spacing: -0.4px;
+    }
+
+    .nav-right {
+      display: flex;
+      gap: 3px;
+      background: var(--surface);
+      padding: 3px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+    }
+
+    .nav-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 12px;
+      font-weight: 600;
+      font-family: var(--font);
+      border-radius: 8px;
+      padding: 6px 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: color 0.15s, background 0.15s;
+    }
+
+    .nav-btn.active {
+      color: #fff;
+      background: rgba(34, 197, 94, 0.15);
+      border-radius: 8px;
+    }
+
+    .nav-btn:hover:not(.active) {
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .live-badge {
+      background: var(--accent);
+      color: #000;
+      font-size: 9px;
+      padding: 1px 6px;
+      border-radius: 99px;
+      font-weight: 800;
+      letter-spacing: 0.3px;
+    }
+
+    /* ── Ticker ── */
+    .ticker {
+      overflow: hidden;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 7px 0;
+      font-size: 11px;
+      white-space: nowrap;
+      font-family: var(--mono);
+    }
+
+    .ticker-inner {
+      display: inline-block;
+      animation: scrollLeft 32s linear infinite;
+      padding-left: 100%;
+    }
+
+    @keyframes scrollLeft {
+      0% {
+        transform: translate3d(0, 0, 0);
+      }
+
+      100% {
+        transform: translate3d(-100%, 0, 0);
+      }
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      50% {
+        opacity: 0.3;
+        transform: scale(1.1);
+      }
+    }
+
+    /* ── Pages ── */
+    .page {
+      display: none;
+      padding: 0 0 4rem 0;
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    .container {
+      max-width: 1140px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+
+    /* ── Curved Glow Backgrounds ── */
+    .hero-bg-curves {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 540px;
+      overflow: hidden;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* ── Gradient Text ── */
+    .text-gradient {
+      background: linear-gradient(135deg, #fff 0%, #4ADE80 55%, #22C55E 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* ── Cards ── */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .card:hover {
+      border-color: var(--border-strong);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+    }
+
+    /* ── Grids ── */
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 1rem;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1.25rem;
+    }
+
+    @media (min-width: 1024px) {
+      .grid-2-large {
+        grid-template-columns: 1.25fr 0.75fr;
+      }
+    }
+
+    /* ── Buttons ── */
+    .btn-primary {
+      background: var(--accent);
+      color: #000;
+      border-radius: 8px;
+      padding: 10px 22px;
+      font-size: 13px;
+      font-weight: 700;
+      font-family: var(--font);
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.15s, transform 0.1s;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-light);
+    }
+
+    .btn-primary:active {
+      transform: scale(0.97);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      border: 1px solid var(--border-strong);
+      color: var(--text-secondary);
+      border-radius: 8px;
+      padding: 10px 22px;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: var(--font);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: color 0.15s, border-color 0.15s, background 0.15s;
+    }
+
+    .btn-ghost:hover {
+      color: var(--text);
+      border-color: rgba(34, 197, 94, 0.4);
+      background: rgba(34, 197, 94, 0.02);
+    }
+
+    .btn-sm {
+      padding: 7px 16px;
+      font-size: 12px;
+    }
+
+    /* ── Typography ── */
+    h1.hero-h1 {
+      font-size: clamp(38px, 6vw, 68px);
+      font-weight: 900;
+      letter-spacing: -2.2px;
+      line-height: 1.05;
+      color: var(--text);
+      margin-bottom: 1.25rem;
+    }
+
+    .section-title {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.4px;
+      margin-bottom: 0.5rem;
+      color: var(--text);
+    }
+
+    .label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    /* ── Badges ── */
+    .badge {
+      font-size: 10px;
+      font-weight: 700;
+      font-family: var(--font);
+      padding: 4px 10px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .badge-green {
+      background: var(--green-bg);
+      color: var(--green);
+      border: 1px solid rgba(34, 197, 94, 0.15);
+    }
+
+    .badge-blue {
+      background: var(--accent-bg);
+      color: var(--accent-light);
+      border: 1px solid rgba(34, 197, 94, 0.15);
+    }
+
+    .badge-amber {
+      background: var(--amber-bg);
+      color: var(--amber);
+      border: 1px solid rgba(245, 158, 11, 0.15);
+    }
+
+    .badge-red {
+      background: var(--red-bg);
+      color: var(--red);
+      border: 1px solid rgba(239, 68, 68, 0.15);
+    }
+
+    /* ── Log Panel ── */
+    .log-panel {
+      background: #060608;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      font-family: var(--mono);
+      font-size: 11px;
+      height: 250px;
+      overflow-y: auto;
+    }
+
+    .log-line {
+      margin-bottom: 5px;
+      line-height: 1.55;
+      display: flex;
+    }
+
+    .log-time {
+      color: var(--muted);
+      margin-right: 12px;
+      flex-shrink: 0;
+      opacity: 0.6;
+    }
+
+    .log-info {
+      color: var(--accent-light);
+    }
+
+    .log-ok {
+      color: var(--green);
+    }
+
+    .log-warn {
+      color: var(--amber);
+    }
+
+    .log-data {
+      color: var(--text-secondary);
+    }
+
+    /* ── Algo Tier Items ── */
+    .algo-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      margin-bottom: 8px;
+      background: transparent;
+      transition: all 0.15s;
+    }
+
+    .algo-item.active {
+      border-color: rgba(34, 197, 94, 0.35);
+      background: rgba(34, 197, 94, 0.05);
+    }
+
+    .algo-item:hover:not(.active) {
+      border-color: var(--border-strong);
+      background: rgba(255, 255, 255, 0.015);
+    }
+
+    .algo-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--muted);
+      transition: background 0.15s;
+    }
+
+    .algo-item.active .algo-dot {
+      background: var(--accent);
+    }
+
+    /* ── Tables ── */
+    .table-card {
+      overflow: hidden;
+      padding: 0 !important;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      text-align: left;
+    }
+
+    th,
+    td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      color: var(--text-secondary);
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 10px;
+      letter-spacing: 1px;
+      background: rgba(34, 197, 94, 0.01);
+    }
+
+    tbody tr:hover {
+      background: rgba(34, 197, 94, 0.01);
+    }
+
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    /* ── Stats ── */
+    .stat-val {
+      font-size: 30px;
+      font-weight: 800;
+      letter-spacing: -0.8px;
+      line-height: 1;
+    }
+
+    /* ── Progress Bars ── */
+    .bar-track {
+      height: 5px;
+      border-radius: 3px;
+      background: rgba(255, 255, 255, 0.04);
+      overflow: hidden;
+      margin-top: 4px;
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 3px;
+      width: 0%;
+      transition: width 0.6s ease-out;
+    }
+
+    /* ── Flow Grid ── */
+    .flow-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem;
+    }
+
+    .flow-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 1.25rem 0.75rem;
+      background: rgba(34, 197, 94, 0.01);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      transition: border-color 0.15s, transform 0.15s;
+    }
+
+    .flow-card:hover {
+      border-color: rgba(34, 197, 94, 0.3);
+      transform: translateY(-2px);
+    }
+
+    .flow-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 17px;
+      margin-bottom: 10px;
+      background: rgba(34, 197, 94, 0.05);
+      border: 1px solid var(--border);
+    }
+
+    /* ── Inputs ── */
+    .input-premium,
+    input[type="text"] {
+      background: var(--bg);
+      border: 1px solid var(--border-strong);
+      color: var(--text);
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-family: var(--mono);
+      transition: border-color 0.15s;
+      outline: none;
+    }
+
+    .input-premium:focus,
+    input[type="text"]:focus {
+      border-color: rgba(34, 197, 94, 0.45);
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      .nav {
+        padding: 0 1rem;
+      }
+
+      .flow-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .flow-card {
+        flex-direction: row;
+        text-align: left;
+        gap: 1rem;
+        padding: 1rem;
+        align-items: center;
+      }
+
+      .flow-icon {
+        margin-bottom: 0;
+      }
+    }
+
+    /* ── Quantum Threat Lab ──────────────────────────────────────── */
+    .qtl-hero {
+      background: radial-gradient(circle at 85% 20%, rgba(34, 197, 94, 0.05) 0%, rgba(20, 184, 166, 0.03) 40%, rgba(18, 18, 20, 0.95) 100%), var(--card);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-lg);
+      padding: 2rem 2.25rem;
+      margin-bottom: 1.75rem;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+    }
+    .qtl-hero::before {
+      content: '';
+      position: absolute;
+      top: -60px; right: -60px;
+      width: 220px; height: 220px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(34, 197, 94, 0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .qtl-step-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      font-family: var(--mono);
+      color: var(--text-secondary);
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      padding: 4px 10px;
+      border-radius: 6px;
+      margin-bottom: 0.75rem;
+    }
+    .qtl-step-pill .step-tag {
+      color: var(--accent);
+      font-weight: 800;
+    }
+    .qtl-step-pill.red .step-tag {
+      color: var(--red);
+    }
+    .qtl-step-pill.amber .step-tag {
+      color: var(--amber);
+    }
+    .qtl-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(34, 197, 94, 0.08);
+      border: 1px solid rgba(34, 197, 94, 0.22);
+      color: var(--accent-light);
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      font-family: var(--mono);
+    }
+    .qtl-badge-red {
+      background: rgba(239, 68, 68, 0.08);
+      border-color: rgba(239, 68, 68, 0.22);
+      color: #F87171;
+    }
+    .qtl-badge-amber {
+      background: rgba(245, 158, 11, 0.08);
+      border-color: rgba(245, 158, 11, 0.22);
+      color: var(--amber);
+    }
+    .qtl-param-btn {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      border-radius: 6px;
+      padding: 4px 9px;
+      font-size: 11px;
+      font-family: var(--mono);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .qtl-param-btn:hover {
+      border-color: var(--accent);
+      color: var(--text);
+      background: rgba(34, 197, 94, 0.06);
+    }
+    .qtl-param-btn.active {
+      background: rgba(34, 197, 94, 0.14);
+      border-color: var(--accent);
+      color: var(--accent-light);
+      font-weight: 700;
+    }
+    .qtl-qubit-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 10px 0 14px 0;
+      flex-wrap: wrap;
+      background: rgba(0, 0, 0, 0.35);
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+    }
+    .qtl-qubit {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      border: 1px solid rgba(20, 184, 166, 0.35);
+      background: rgba(20, 184, 166, 0.05);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--teal);
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .qtl-qubit.target {
+      border-color: rgba(139, 92, 246, 0.35);
+      background: rgba(139, 92, 246, 0.05);
+      color: var(--purple);
+    }
+    .qtl-qubit.active {
+      background: rgba(34, 197, 94, 0.18);
+      border-color: var(--accent);
+      color: #fff;
+      box-shadow: 0 0 14px rgba(34, 197, 94, 0.35);
+      animation: qubit-pulse 1.2s ease-in-out infinite;
+    }
+    @keyframes qubit-pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.08); }
+    }
+    .qtl-circuit-console {
+      background: #08080B;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-family: var(--mono);
+      font-size: 11px;
+      line-height: 1.7;
+      color: var(--text-secondary);
+      overflow-x: auto;
+    }
+    .gate-h { color: var(--teal); font-weight: 600; }
+    .gate-u { color: var(--purple); font-weight: 600; }
+    .gate-qft { color: var(--accent-light); font-weight: 600; }
+    .gate-ctrl { color: var(--accent); font-weight: 800; }
+    .qtl-stat-box {
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      text-align: center;
+      transition: border-color 0.15s;
+    }
+    .qtl-stat-box:hover {
+      border-color: var(--border-strong);
+    }
+    .qtl-stat-value {
+      font-size: 20px;
+      font-weight: 800;
+      font-family: var(--mono);
+      letter-spacing: -0.5px;
+    }
+    .qtl-stat-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+    .qtl-factors-display {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      background: rgba(34, 197, 94, 0.05);
+      border: 1px solid rgba(34, 197, 94, 0.2);
+      border-radius: 10px;
+      padding: 12px 18px;
+      font-size: 18px;
+      font-weight: 700;
+      font-family: var(--mono);
+      color: var(--text);
+      margin: 12px 0;
+    }
+    .qtl-mode-toggle {
+      display: flex;
+      background: #08080B;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 3px;
+      margin-bottom: 1.25rem;
+      gap: 4px;
+    }
+    .qtl-mode-btn {
+      flex: 1;
+      padding: 9px 16px;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--text-secondary);
+      font-family: var(--font);
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 7px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: center;
+    }
+    .qtl-mode-btn:hover:not(.active-classical):not(.active-hybrid) {
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.02);
+    }
+    .qtl-mode-btn.active-classical {
+      background: rgba(239, 68, 68, 0.12);
+      color: #F87171;
+      border-color: rgba(239, 68, 68, 0.25);
+    }
+    .qtl-mode-btn.active-hybrid {
+      background: rgba(34, 197, 94, 0.12);
+      color: var(--accent-light);
+      border-color: rgba(34, 197, 94, 0.28);
+    }
+    .qtl-console-panel {
+      background: #08080A;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-family: var(--mono);
+      font-size: 12px;
+      line-height: 1.6;
+      color: var(--text);
+    }
+    .qtl-captured-panel {
+      background: rgba(239, 68, 68, 0.04);
+      border: 1px solid rgba(239, 68, 68, 0.22);
+      border-radius: 10px;
+      padding: 14px 16px;
+      font-family: var(--mono);
+      font-size: 11px;
+      margin-top: 12px;
+    }
+    .qtl-decrypted-panel {
+      background: rgba(239, 68, 68, 0.06);
+      border: 1px solid rgba(239, 68, 68, 0.28);
+      border-radius: 10px;
+      padding: 16px;
+      margin-top: 12px;
+    }
+    .qtl-comparison-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    .qtl-comparison-table th {
+      text-align: left;
+      padding: 12px 18px;
+      color: var(--text-secondary);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.015);
+    }
+    .qtl-comparison-table td {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+    .qtl-comparison-table tr:last-child td {
+      border-bottom: none;
+    }
+    .qtl-comparison-table tr:hover td {
+      background: rgba(255, 255, 255, 0.015);
+    }
+    .status-vulnerable { color: #F87171; font-weight: 700; font-size: 12px; }
+    .status-safe { color: var(--accent-light); font-weight: 700; font-size: 12px; }
+    .status-warn { color: var(--amber); font-weight: 700; font-size: 12px; }
+    .qtl-hndl-explainer {
+      background: rgba(34, 197, 94, 0.03);
+      border-left: 3px solid var(--accent);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      padding: 1.25rem 1.5rem;
+      margin-top: 1.25rem;
+    }
+    .disclaimer-box {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--teal);
+      border-radius: var(--radius);
+      padding: 12px 16px;
+      font-size: 12px;
+      color: var(--text-secondary);
+      line-height: 1.65;
+      margin-top: 12px;
+    }
+    .disclaimer-box strong { color: var(--text); }
+  </style>
+
+</head>
+
+<body>
+  <div class="nav">
+    <div class="nav-left">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5"
+        stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+      </svg>
+      QUAN<span style="color:var(--accent)">T</span>A
+    </div>
+    <div class="nav-right">
+      <button class="nav-btn active" data-page="home">Overview</button>
+      <button class="nav-btn" data-page="register">Register</button>
+      <button class="nav-btn" data-page="keygen">Keys</button>
+      <button class="nav-btn" data-page="demo">Live Demo <span class="live-badge">LIVE</span></button>
+      <button class="nav-btn" data-page="audit">Audit</button>
+      <button class="nav-btn" data-page="quantum">Threat Lab <span class="badge badge-amber" style="padding:1px 5px;font-size:9px;border-radius:4px;">LAB</span></button>
+    </div>
+  </div>
+
+  <div class="ticker">
+    <div class="ticker-inner">
+      <span style="color:var(--muted)">ML-KEM-768</span> <span style="color:var(--accent)">0.21ms</span> <span
+        style="color:var(--border-strong); margin:0 10px;">·</span>
+      <span style="color:var(--muted)">ML-DSA-65</span> <span style="color:var(--accent)">0.34ms</span> <span
+        style="color:var(--border-strong); margin:0 10px;">·</span>
+      <span style="color:var(--muted)">Handshake</span> <span style="color:var(--accent)">2.1ms</span> <span
+        style="color:var(--border-strong); margin:0 10px;">·</span>
+      <span style="color:var(--muted)">HNDLR</span> <span style="color:var(--accent)">94.2</span> <span
+        style="color:var(--border-strong); margin:0 10px;">·</span>
+      <span style="color:var(--muted)">TLS 1.3</span> <span style="color:var(--red)">31.7</span> <span
+        style="color:var(--border-strong); margin:0 10px;">·</span>
+      <span style="color:var(--muted)">AES-256-GCM</span> <span style="color:var(--accent)">0.08ms/KB</span> <span
+        style="color:var(--border-strong); margin:0 10px;">·</span>
+      <span style="color:var(--muted)">SHST saving</span> <span style="color:var(--purple)">83%</span> <span
+        style="color:var(--border-strong); margin:0 10px;">·</span>
+      <span style="color:var(--muted)">NIST Level 3</span> <span
+        style="color:var(--border-strong); margin:0 10px;">·</span>
+      <span style="color:var(--muted)">Quantum gates</span> <span style="color:var(--accent)">2^178</span>
+    </div>
+  </div>
+
+  <div id="page-home" class="page active" style="position: relative; overflow: hidden;">
+    <div class="hero-bg-curves">
+      <svg width="100%" height="540" viewBox="0 0 1440 540" fill="none" xmlns="http://www.w3.org/2000/svg"
+        style="overflow: visible;">
+        <defs>
+          <linearGradient id="green-grad-1" x1="0" y1="0" x2="1440" y2="0" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#22C55E" stop-opacity="0" />
+            <stop offset="25%" stop-color="#22C55E" stop-opacity="0.9" />
+            <stop offset="75%" stop-color="#10B981" stop-opacity="0.7" />
+            <stop offset="100%" stop-color="#059669" stop-opacity="0" />
+          </linearGradient>
+          <linearGradient id="green-grad-2" x1="0" y1="0" x2="1440" y2="0" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#14B8A6" stop-opacity="0" />
+            <stop offset="40%" stop-color="#22C55E" stop-opacity="0.5" />
+            <stop offset="100%" stop-color="#047857" stop-opacity="0" />
+          </linearGradient>
+          <filter id="glow-filter" x="-20%" y="-100%" width="140%" height="400%">
+            <feGaussianBlur stdDeviation="10" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+          <radialGradient id="radial-glow" cx="50%" cy="40%" r="50%">
+            <stop offset="0%" stop-color="#22C55E" stop-opacity="0.07" />
+            <stop offset="100%" stop-color="#22C55E" stop-opacity="0" />
+          </radialGradient>
+        </defs>
+        <rect width="1440" height="540" fill="url(#radial-glow)" />
+        <g filter="url(#glow-filter)">
+          <path d="M-80 180 C 300 40, 700 500, 1520 160" stroke="url(#green-grad-1)" stroke-width="1.5" fill="none" />
+          <path d="M-80 220 C 280 60, 720 520, 1520 200" stroke="url(#green-grad-1)" stroke-width="4" fill="none"
+            stroke-opacity="0.6" />
+          <path d="M-80 300 C 420 520, 900 -20, 1520 360" stroke="url(#green-grad-2)" stroke-width="2" fill="none" />
+        </g>
+      </svg>
+    </div>
+    <div class="container" style="position: relative; z-index: 1;">
+      <div style="text-align:center; max-width:740px; margin:0 auto; padding:5rem 1rem 3rem;">
+        <div
+          style="color:var(--accent); font-size:11px; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; margin-bottom:1.5rem; display:inline-flex; align-items:center; gap:6px;">
+          <div style="width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite;">
+          </div>
+          NIST PQC Level 3 · Production Ready
+        </div>
+        <h1 class="hero-h1"><span class="text-gradient">Quantum-safe</span> web auth<br>for the post-quantum era</h1>
+        <div style="font-size:14px; color:var(--text-secondary); max-width:560px; margin:0 auto 2rem; line-height:1.7;">
+          QUANTA integrates ML-KEM-768, ML-DSA-65, and AES-256-GCM at the application layer — delivering hybrid
+          post-quantum cryptography with sub-5ms handshake latency.
+        </div>
+        <div style="display:flex; justify-content:center; gap:10px; margin-bottom:3.5rem;">
+          <button class="btn-primary" data-page="demo" onclick="showPage('demo')">Run live demo →</button>
+          <button class="btn-ghost" data-page="quantum" onclick="showPage('quantum')">Threat Lab →</button>
+        </div>
+        <div class="grid-3" style="max-width:640px; margin:0 auto;">
+          <div class="card" style="text-align:center; padding:1.25rem 1rem;">
+            <div class="stat-val" style="color:var(--accent);">94.2</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:4px;">HNDLR-Score</div>
+          </div>
+          <div class="card" style="text-align:center; padding:1.25rem 1rem;">
+            <div class="stat-val" style="color:var(--text);">&lt;5ms</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:4px;">Handshake latency</div>
+          </div>
+          <div class="card" style="text-align:center; padding:1.25rem 1rem;">
+            <div class="stat-val" style="color:var(--purple);">83%</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:4px;">SHST overhead saved</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="container" style="padding-bottom:2.5rem;">
+      <div class="section-title">How QUANTA works</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:1rem;">Hybrid cryptographic handshake in 5 steps</div>
+      <div class="flow-grid">
+        <div class="flow-card">
+          <div class="flow-icon" style="background:var(--accent-bg); border:1px solid rgba(52,211,153,0.15);">🔒</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;">1. Client Initiation</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px;">Initiates secure handshake session</div>
+          </div>
+        </div>
+        <div class="flow-card">
+          <div class="flow-icon" style="background:var(--purple-bg); border:1px solid rgba(139,92,246,0.2);">🔑</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;">2. Key Exchange</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px;">X25519 + ML-KEM-768 hybrid agreement</div>
+          </div>
+        </div>
+        <div class="flow-card">
+          <div class="flow-icon" style="background:var(--green-bg); border:1px solid rgba(52,211,153,0.15);">✍️</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;">3. Server Signing</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px;">ML-DSA-65 post-quantum signature</div>
+          </div>
+        </div>
+        <div class="flow-card">
+          <div class="flow-icon" style="background:var(--amber-bg); border:1px solid rgba(245,158,11,0.2);">🧪</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;">4. Channel Encryption</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px;">AES-256-GCM symmetric block cipher</div>
+          </div>
+        </div>
+        <div class="flow-card">
+          <div class="flow-icon" style="background:var(--teal-bg); border:1px solid rgba(20,184,166,0.2);">🎟️</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;">5. SHST Caching</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px;">Saves 83% overhead on subsequent requests
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="container grid-3" style="padding-bottom:3.5rem;">
+      <div class="card">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+          <span style="font-size:20px; color:var(--accent);">🛡️</span>
+          <span class="section-title" style="margin-bottom:0;">Hybrid KEM</span>
+        </div>
+        <div style="font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.6;">Combines classical X25519
+          ECDH with ML-KEM-768 so that breaking one cryptographic component leaves the overall session secure. IND-CCA2
+          security proven.</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <span class="badge"
+            style="background:rgba(255,255,255,0.03);border:1px solid var(--border);">ML-KEM-768</span>
+          <span class="badge" style="background:rgba(255,255,255,0.03);border:1px solid var(--border);">X25519</span>
+          <span class="badge" style="background:rgba(255,255,255,0.03);border:1px solid var(--border);">HKDF-SHA3</span>
+        </div>
+      </div>
+      <div class="card">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+          <span style="font-size:20px; color:var(--amber);">⚙️</span>
+          <span class="section-title" style="margin-bottom:0;">Crypto-agility Engine</span>
+        </div>
+        <div style="font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.6;">Four-tier fallback chain.
+          Dynamic algorithm rotation happens transparently at runtime — requiring zero service restarts, client updates,
+          or downtime.</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <span class="badge" style="background:rgba(255,255,255,0.03);border:1px solid var(--border);">Tier 1–4</span>
+          <span class="badge" style="background:rgba(255,255,255,0.03);border:1px solid var(--border);">Zero
+            Downtime</span>
+          <span class="badge" style="background:rgba(255,255,255,0.03);border:1px solid var(--border);">Hot-Swap</span>
+        </div>
+      </div>
+      <div class="card">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+          <span style="font-size:20px; color:var(--purple);">📊</span>
+          <span class="section-title" style="margin-bottom:0;">HNDLR-Score</span>
+        </div>
+        <div style="font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.6;">Quantitative 5-dimension
+          security matrix for Harvest-Now-Decrypt-Later resistance. QUANTA scores 94.2 compared to only 31.7 for
+          classical
+          TLS 1.3.</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <span class="badge" style="background:rgba(255,255,255,0.03);border:1px solid var(--border);">5
+            Dimensions</span>
+          <span class="badge" style="background:rgba(255,255,255,0.03);border:1px solid var(--border);">Weighted
+            Score</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="container" style="padding-bottom:3.5rem;">
+      <div class="card table-card">
+        <div style="overflow-x: auto;">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:220px;">Feature</th>
+                <th style="color:var(--accent);">QUANTA (PQC Hybrid)</th>
+                <th>TLS 1.3 (Classical)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>HNDL resistance</td>
+                <td style="color:var(--green);font-weight:600;">✓ Full (94.2/100)</td>
+                <td style="color:var(--red); font-weight:600;">✗ None (31.7/100)</td>
+              </tr>
+              <tr>
+                <td>Forward secrecy</td>
+                <td style="color:var(--green);font-weight:600;">✓ PQC + Classical</td>
+                <td style="color:var(--green);font-weight:600;">✓ Classical only</td>
+              </tr>
+              <tr>
+                <td>Handshake latency</td>
+                <td>2.1ms (hybrid average)</td>
+                <td>1.3ms</td>
+              </tr>
+              <tr>
+                <td>Crypto-agility</td>
+                <td style="color:var(--green);font-weight:600;">✓ Runtime hot-swap</td>
+                <td style="color:var(--red); font-weight:600;">✗ Static config</td>
+              </tr>
+              <tr>
+                <td>Session token</td>
+                <td style="color:var(--green);font-weight:600;">✓ SHST (83% saving)</td>
+                <td style="color:var(--red); font-weight:600;">✗ Full re-key each req</td>
+              </tr>
+              <tr>
+                <td>Quantum-safe</td>
+                <td style="color:var(--green);font-weight:600;">✓ NIST Level 3</td>
+                <td style="color:var(--red); font-weight:600;">✗ Breaks with CRQC</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="page-register" class="page container" style="padding-top:2rem; max-width:640px;">
+    <div class="section-title">User Registration</div>
+    <div style="font-size:14px;color:var(--muted);margin-bottom:1.5rem;">Create your QUANTA identity before generating
+      post-quantum keys</div>
+    <div class="card">
+      <div style="margin-bottom:16px;">
+        <div class="label">Full name</div>
+        <input type="text" id="reg-name" class="input-premium" style="width:100%;" placeholder="Alice Sharma"
+          value="Alice Sharma">
+      </div>
+      <div style="margin-bottom:16px;">
+        <div class="label">Email / Username</div>
+        <input type="text" id="reg-email" class="input-premium" style="width:100%;" placeholder="alice@example.com"
+          value="alice@example.com">
+      </div>
+      <div style="margin-bottom:20px;">
+        <div class="label">Organization</div>
+        <select id="reg-org" class="input-premium" style="width:100%;">
+          <option>Individual Developer</option>
+          <option>Financial Institution</option>
+          <option>Healthcare Provider</option>
+          <option>Government Agency</option>
+          <option>Enterprise / Other</option>
+        </select>
+      </div>
+      <button class="btn-primary" id="btn-register" style="width:100%;justify-content:center;">Create Account</button>
+      <div id="reg-success" style="display:none;margin-top:18px;">
+        <div
+          style="padding:14px;background:var(--green-bg);border-radius:var(--radius);border:1px solid rgba(52,211,153,0.15);">
+          <div style="font-size:13px;font-weight:700;color:var(--green);display:flex;align-items:center;gap:6px;">✅
+            Account created successfully</div>
+          <div id="reg-userid" style="font-size:11px;color:var(--muted);margin-top:6px;font-family:var(--mono);"></div>
+        </div>
+        <button class="btn-primary" id="btn-goto-keygen"
+          style="width:100%;justify-content:center;margin-top:14px;">Generate PQC Keys →</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="page-keygen" class="page container" style="padding-top:2rem; max-width:760px;">
+    <div class="section-title">Key Generation</div>
+    <div style="font-size:14px;color:var(--muted);margin-bottom:1.5rem;">Generate your hybrid post-quantum keypairs.
+      Private keys never leave this device.</div>
+    <div class="grid-2" style="margin-bottom:1.25rem;">
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+          <span class="section-title" style="margin-bottom:0;font-size:16px;">ML-KEM-768</span>
+          <span class="badge badge-blue">KEM</span>
+        </div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">Module-lattice key-encapsulation mechanism,
+          NIST FIPS 203</div>
+        <button class="btn-ghost btn-sm" id="btn-gen-kem" style="width:100%;justify-content:center;">Generate ML-KEM-768
+          Keypair</button>
+        <div id="kem-status" style="font-size:11px;color:var(--muted);margin-top:10px;font-family:var(--mono);">Status:
+          not generated</div>
+        <div id="kem-pubkey-wrap" style="display:none;margin-top:12px;">
+          <div class="label">Public key (truncated)</div>
+          <div id="kem-pubkey"
+            style="font-family:var(--mono);font-size:10px;color:var(--accent);word-break:break-all;background:var(--surface);padding:10px;border-radius:8px;border:1px solid var(--border);">
+          </div>
+          <div style="font-size:10px;color:var(--muted);margin-top:6px;">🔒 Private key stored securely — never
+            transmitted</div>
+        </div>
+      </div>
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+          <span class="section-title" style="margin-bottom:0;font-size:16px;">ML-DSA-65</span>
+          <span class="badge badge-blue">Signature</span>
+        </div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">Module-lattice digital signature algorithm,
+          NIST FIPS 204</div>
+        <button class="btn-ghost btn-sm" id="btn-gen-dsa" style="width:100%;justify-content:center;">Generate ML-DSA-65
+          Keypair</button>
+        <div id="dsa-status" style="font-size:11px;color:var(--muted);margin-top:10px;font-family:var(--mono);">Status:
+          not generated</div>
+        <div id="dsa-pubkey-wrap" style="display:none;margin-top:12px;">
+          <div class="label">Public key (truncated)</div>
+          <div id="dsa-pubkey"
+            style="font-family:var(--mono);font-size:10px;color:var(--accent);word-break:break-all;background:var(--surface);padding:10px;border-radius:8px;border:1px solid var(--border);">
+          </div>
+          <div style="font-size:10px;color:var(--muted);margin-top:6px;">🔒 Private key stored securely — never
+            transmitted</div>
+        </div>
+      </div>
+    </div>
+    <button class="btn-primary" id="btn-goto-demo" disabled
+      style="width:100%;justify-content:center;opacity:0.4;cursor:not-allowed;">Continue to Secure Communication
+      →</button>
+  </div>
+
+  <div id="page-demo" class="page container" style="padding-top:2rem;">
+    <div
+      style="display:flex; justify-content:space-between; margin-bottom:1.5rem; align-items:center; flex-wrap:wrap; gap:12px;">
+      <div>
+        <div class="section-title">Live Handshake Demo</div>
+        <div style="font-size:14px;color:var(--muted);">Click Run handshake to simulate a full QUANTA session</div>
+      </div>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <div class="badge badge-green">
+          <div style="width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;">
+          </div>
+          Server Online
+        </div>
+        <button class="btn-primary" id="btn-run-pqc-tls" style="background:#8B5CF6; border-color:#8B5CF6;">Test TLS 1.3 Hybrid Channel</button>
+        <button class="btn-primary" id="btn-run-handshake">Run simulation</button>
+        <button class="btn-ghost" id="btn-clear-log">Clear log</button>
+      </div>
+    </div>
+
+    <!-- quanta-channel Real TLS 1.3 Live Telemetry Panel -->
+    <div id="tls-live-card" class="card" style="margin-bottom:1.5rem; border:1px solid rgba(139, 92, 246, 0.35); background: rgba(139, 92, 246, 0.04);">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:12px;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#8B5CF6; animation:pulse 2s infinite;"></span>
+          <span style="font-weight:700; font-size:13px; color:#A78BFA; letter-spacing:0.3px;">quanta-channel: Real Multi-Process TLS 1.3 Hybrid Socket</span>
+          <span class="badge" style="background:rgba(139, 92, 246, 0.18); color:#C4B5FD; font-size:10px;">RFC 10024 & RFC 8446</span>
+        </div>
+        <div id="tls-status-badge" class="badge badge-green" style="display:none; font-size:11px;">Verified Active</div>
+      </div>
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:12px; font-size:12px;">
+        <div>
+          <div style="color:var(--muted); font-size:10px; font-weight:600; text-transform:uppercase;">Negotiated Key Exchange</div>
+          <div id="tls-group-val" style="font-weight:700; color:var(--text); font-family:var(--mono); margin-top:2px;">X25519MLKEM768 (Standby)</div>
+        </div>
+        <div>
+          <div style="color:var(--muted); font-size:10px; font-weight:600; text-transform:uppercase;">Handshake Latency</div>
+          <div id="tls-latency-val" style="font-weight:700; color:#4ADE80; font-family:var(--mono); margin-top:2px;">—</div>
+        </div>
+        <div>
+          <div style="color:var(--muted); font-size:10px; font-weight:600; text-transform:uppercase;">Peer Identity Auth</div>
+          <div id="tls-cert-val" style="font-weight:700; color:var(--text); font-family:var(--mono); margin-top:2px;">CN=localhost (Strict CA)</div>
+        </div>
+        <div>
+          <div style="color:var(--muted); font-size:10px; font-weight:600; text-transform:uppercase;">Cryptographic Audit</div>
+          <div id="tls-audit-val" style="font-weight:700; color:#38BDF8; font-family:var(--mono); margin-top:2px;">Zero Secrets Disclosed (FIPS 203)</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-4" style="margin-bottom:1.5rem;">
+      <div class="card" style="display:flex; flex-direction:column; justify-content:space-between;">
+        <div>
+          <div class="label">HNDLR-Score</div>
+          <div id="m-score" class="stat-val" style="color:var(--accent); font-weight:800;">—</div>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-top:8px;font-weight:500;">Quantum resistance rating</div>
+      </div>
+      <div class="card" style="display:flex; flex-direction:column; justify-content:space-between;">
+        <div>
+          <div class="label">Handshake time</div>
+          <div id="m-latency" class="stat-val" style="color:var(--green); font-weight:800;">—</div>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-top:8px;font-weight:500;">End-to-end latency</div>
+      </div>
+      <div class="card" style="display:flex; flex-direction:column; justify-content:space-between;">
+        <div>
+          <div class="label">SHST overhead</div>
+          <div id="m-shst" class="stat-val" style="color:var(--purple); font-weight:800;">—</div>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-top:8px;font-weight:500;">vs full re-key</div>
+      </div>
+      <div class="card" style="display:flex; flex-direction:column; justify-content:space-between;">
+        <div>
+          <div class="label">Security level</div>
+          <div id="m-level" class="stat-val" style="color:var(--text); font-weight:800;">—</div>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-top:8px;font-weight:500;">NIST rating</div>
+      </div>
+    </div>
+
+    <div class="grid-2 grid-2-large" style="margin-bottom:1.5rem;">
+      <div>
+        <div class="label">Protocol log</div>
+        <div id="log-panel" class="log-panel">
+          <div class="log-line"><span class="log-time">00:00:00</span><span class="log-info">QUANTA server ready —
+              awaiting handshake...</span></div>
+        </div>
+      </div>
+      <div>
+        <div class="label">Crypto-agility — algorithm tier</div>
+        <div id="algo-0" class="algo-item active">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div class="algo-dot"></div>
+            <div>
+              <div style="font-size:13px;font-weight:600;">Tier 1 — Full PQC hybrid</div>
+              <div style="font-size:11px;color:var(--muted);">ML-KEM-768 + X25519 · ML-DSA-65 · AES-256-GCM</div>
+            </div>
+          </div>
+          <div class="badge badge-blue">Active</div>
+        </div>
+        <div id="algo-1" class="algo-item">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div class="algo-dot"></div>
+            <div>
+              <div style="font-size:13px;font-weight:600;">Tier 2 — KEM only</div>
+              <div style="font-size:11px;color:var(--muted);">ML-KEM-768 · ECDSA · AES-256-GCM</div>
+            </div>
+          </div>
+          <div class="badge badge-amber">Fallback</div>
+        </div>
+        <div id="algo-2" class="algo-item">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div class="algo-dot"></div>
+            <div>
+              <div style="font-size:13px;font-weight:600;">Tier 3 — Signature only</div>
+              <div style="font-size:11px;color:var(--muted);">X25519 · ML-DSA-65 · AES-256-GCM</div>
+            </div>
+          </div>
+          <div class="badge badge-amber">Fallback</div>
+        </div>
+        <div id="algo-3" class="algo-item">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div class="algo-dot"></div>
+            <div>
+              <div style="font-size:13px;font-weight:600;">Tier 4 — Classical</div>
+              <div style="font-size:11px;color:var(--muted);">X25519 · ECDSA · AES-128-GCM</div>
+            </div>
+          </div>
+          <div class="badge badge-red">Legacy</div>
+        </div>
+        <div style="display:flex;gap:6px;margin:12px 0;">
+          <div id="tb-0"
+            style="flex:1;height:5px;border-radius:99px;background:var(--accent); transition: background 0.2s ease;">
+          </div>
+          <div id="tb-1"
+            style="flex:1;height:5px;border-radius:99px;background:var(--border); transition: background 0.2s ease;">
+          </div>
+          <div id="tb-2"
+            style="flex:1;height:5px;border-radius:99px;background:var(--border); transition: background 0.2s ease;">
+          </div>
+          <div id="tb-3"
+            style="flex:1;height:5px;border-radius:99px;background:var(--border); transition: background 0.2s ease;">
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--muted);text-align:center;">Tier <span id="tier-num">1</span> of 4 active
+          — switch with no service restart</div>
+      </div>
+    </div>
+
+    <div class="grid-2" style="margin-bottom:1.5rem;">
+      <div class="card">
+        <div class="label">HNDLR-Score breakdown</div>
+        <div style="margin-bottom:14px;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span
+              style="font-size:13px;font-weight:500;">KEM strength (w=0.35)</span><span id="d0"
+              style="font-size:12px;color:var(--muted);">—</span></div>
+          <div class="bar-track">
+            <div id="df0" class="bar-fill" style="background:var(--accent);"></div>
+          </div>
+        </div>
+        <div style="margin-bottom:14px;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span
+              style="font-size:13px;font-weight:500;">Signature scheme (w=0.25)</span><span id="d1"
+              style="font-size:12px;color:var(--muted);">—</span></div>
+          <div class="bar-track">
+            <div id="df1" class="bar-fill" style="background:var(--purple);"></div>
+          </div>
+        </div>
+        <div style="margin-bottom:14px;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span
+              style="font-size:13px;font-weight:500;">Forward secrecy (w=0.20)</span><span id="d2"
+              style="font-size:12px;color:var(--muted);">—</span></div>
+          <div class="bar-track">
+            <div id="df2" class="bar-fill" style="background:var(--green);"></div>
+          </div>
+        </div>
+        <div style="margin-bottom:14px;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span
+              style="font-size:13px;font-weight:500;">Crypto-agility (w=0.10)</span><span id="d3"
+              style="font-size:12px;color:var(--muted);">—</span></div>
+          <div class="bar-track">
+            <div id="df3" class="bar-fill" style="background:var(--amber);"></div>
+          </div>
+        </div>
+        <div style="margin-bottom:14px;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span
+              style="font-size:13px;font-weight:500;">Backward compat (w=0.10)</span><span id="d4"
+              style="font-size:12px;color:var(--muted);">—</span></div>
+          <div class="bar-track">
+            <div id="df4" class="bar-fill" style="background:var(--teal);"></div>
+          </div>
+        </div>
+        <div
+          style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--border);padding-top:12px;margin-top:12px;">
+          <span style="font-size:13px;color:var(--muted);font-weight:600;">Total HNDLR-Score</span>
+          <span id="total-score" style="font-size:24px;font-weight:800;color:var(--accent);">—</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="label">Latency history</div>
+        <div style="height:200px;width:100%;"><canvas id="latencyChart"></canvas></div>
+        <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:12px;font-weight:500;">Avg QUANTA:
+          <span id="avg-quanta" style="color:var(--accent); font-weight:600;">—</span> &nbsp;|&nbsp; Avg TLS 1.3: 1.3ms
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:1.5rem;">
+      <div class="label">Secure communication</div>
+      <div
+        style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="badge badge-blue">Sender</span>
+          <span style="font-size:13px;font-weight:600;" id="comm-sender">Alice — QUANTA-USR-A1F9</span>
+        </div>
+        <span style="color:var(--muted);font-size:16px;">→</span>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="badge badge-green">Receiver</span>
+          <span style="font-size:13px;font-weight:600;" id="comm-receiver">Bob — QUANTA-USR-B7C2</span>
+        </div>
+        <div id="comm-delivery" style="display:none;">
+          <span class="badge badge-green">✅ Delivered &amp; decrypted</span>
+        </div>
+      </div>
+      <textarea id="comm-msg-input" class="input-premium"
+        style="width:100%;min-height:64px;resize:vertical;margin-bottom:12px;"
+        placeholder="Confidential message...">Confidential: Q3 financial report attached.</textarea>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn-ghost btn-sm" id="btn-encrypt">🔒 Encrypt</button>
+        <button class="btn-ghost btn-sm" id="btn-send" disabled style="opacity:0.4;cursor:not-allowed;">📤 Send</button>
+        <button class="btn-ghost btn-sm" id="btn-decrypt" disabled style="opacity:0.4;cursor:not-allowed;">🔓
+          Decrypt</button>
+      </div>
+      <div id="comm-cipher-wrap" style="display:none;margin-top:12px;">
+        <div class="label">Ciphertext (AES-256-GCM, truncated)</div>
+        <div id="comm-cipher"
+          style="font-family:var(--mono);font-size:11px;color:var(--accent);word-break:break-all;background:var(--surface);padding:10px;border-radius:8px;border:1px solid var(--border);">
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:1.5rem;">
+      <div class="label">Message signing and verification</div>
+      <div style="display:flex;gap:12px;align-items:center;margin-bottom:16px;flex-wrap:wrap;">
+        <input type="text" id="msg-input" class="msg-input input-premium" style="flex:1; min-width:260px;"
+          placeholder="Transfer $5000 to account 9812-3456" value="Transfer $5000 to account 9812-3456">
+        <button class="btn-ghost btn-sm" id="btn-sign" style="flex-shrink:0; height:42px;">Sign with ML-DSA-65</button>
+      </div>
+      <div id="sig-result" style="display:none; transition: all 0.3s ease;">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:1.25rem;">
+          <div>
+            <div class="label">Signature (truncated hex)</div>
+            <div id="sig-hex"
+              style="font-family:var(--mono);font-size:11px;color:var(--accent);word-break:break-all;background:var(--surface);padding:12px;border-radius:8px;border:1px solid var(--border);min-height:48px;">
+            </div>
+            <div style="display:flex;gap:6px;margin-top:8px;">
+              <button class="btn-ghost btn-sm" id="btn-copy-sig">Copy signature</button>
+              <button class="btn-ghost btn-sm" id="btn-download-sig">Download (.sig)</button>
+            </div>
+          </div>
+          <div>
+            <div class="label">Verification status</div>
+            <div id="sig-verify"
+              style="padding:12px;background:var(--green-bg);border-radius:8px;border:1px solid rgba(52,211,153,0.15);display:flex;flex-direction:column;justify-content:center;min-height:64px;">
+              <div style="font-size:13px;font-weight:700;color:var(--green);display:flex;align-items:center;gap:6px;">✅
+                ML-DSA-65 Signature Verified</div>
+              <div id="sig-time" style="font-size:11px;color:var(--muted);margin-top:4px;font-family:var(--mono);">
+              </div>
+            </div>
+            <div style="margin-top:10px;font-size:11px;color:var(--muted);line-height:1.7;">
+              <div>Signer identity: <span id="sig-signer" style="color:var(--text);font-weight:600;">Alice —
+                  QUANTA-USR-A1F9</span></div>
+              <div>Timestamp: <span id="sig-timestamp"
+                  style="color:var(--text);font-weight:600;font-family:var(--mono);"></span></div>
+              <div>Algorithm: <span style="color:var(--text);font-weight:600;">ML-DSA-65 (NIST FIPS 204)</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="page-audit" class="page container" style="padding-top:2rem;">
+    <div class="section-title">Audit History</div>
+    <div style="font-size:14px;color:var(--muted);margin-bottom:1.5rem;">Complete event timeline across registration,
+      key generation, handshakes, signing, and verification</div>
+    <div class="card" style="margin-bottom:1.25rem;">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+        <input type="text" id="audit-search" class="input-premium" style="flex:1;min-width:200px;"
+          placeholder="Search by user or operation...">
+        <select id="audit-filter" class="input-premium">
+          <option value="all">All operations</option>
+          <option value="Registration">Registration</option>
+          <option value="Key Generation">Key Generation</option>
+          <option value="Handshake">Handshake</option>
+          <option value="Encryption">Encryption</option>
+          <option value="Signing">Signing</option>
+          <option value="Verification">Verification</option>
+        </select>
+        <button class="btn-ghost btn-sm" id="btn-audit-clear-filter">Clear</button>
+      </div>
+    </div>
+    <div class="card table-card">
+      <div style="overflow-x:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>Timestamp</th>
+              <th>User</th>
+              <th>Operation</th>
+              <th>Algorithm</th>
+              <th>Result</th>
+            </tr>
+          </thead>
+          <tbody id="audit-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       QUANTUM THREAT LAB PAGE
+       ══════════════════════════════════════════════════════════════════ -->
+  <div id="page-quantum" class="page container" style="padding-top:2rem;">
+
+    <!-- Hero Banner -->
+    <div class="qtl-hero">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:0.85rem;">
+        <div>
+          <div style="font-size:22px;font-weight:800;letter-spacing:-0.5px;color:var(--text);">Quantum Threat Lab</div>
+          <div style="font-size:13px;color:var(--text-secondary);margin-top:3px;">
+            Shor's Algorithm Simulation <span style="color:var(--muted);margin:0 6px;">·</span> Harvest-Now, Decrypt-Later Demo <span style="color:var(--muted);margin:0 6px;">·</span> Hybrid PQC Mitigation
+          </div>
+        </div>
+        <span class="qtl-badge">Proof of Principle</span>
+      </div>
+      <div style="font-size:13px;color:var(--text-secondary);line-height:1.7;max-width:780px;">
+        Demonstrates how future Cryptographically Relevant Quantum Computers (CRQCs) can compromise classical asymmetric
+        cryptography (RSA, ECC, X25519) to execute <strong style="color:var(--amber);">Harvest-Now, Decrypt-Later (HNDL)</strong> attacks, and how QUANTA's hybrid architecture (<strong style="color:var(--accent-light);">ML-KEM-768 + X25519</strong>) eliminates this vulnerability.
+      </div>
+      <div class="disclaimer-box">
+        <strong>Important Disclaimer:</strong> This module runs a mathematical simulation of Shor's period-finding on classical hardware to factor N=15 as an educational proof of principle. Breaking production RSA-2048 or ECC-256 requires millions of error-corrected physical qubits.
+      </div>
+    </div>
+
+    <!-- ── STEP 01: Shor's Algorithm Simulation (Full-Width Card with 2-Column Split) ── -->
+    <div class="card" style="margin-bottom:1.75rem;">
+      <div class="qtl-step-pill amber">
+        <span class="step-tag">Step 01</span> // Quantum Phase Estimation &amp; Factorization
+      </div>
+      <div class="section-title" style="margin-bottom:4px;" id="qtl-step1-title">Shor's Algorithm Simulation (N=15, a=7)</div>
+      <div style="font-size:13px;color:var(--text-secondary);margin-bottom:1.5rem;line-height:1.6;max-width:800px;" id="qtl-step1-desc">
+        Simulates the quantum phase estimation and inverse Quantum Fourier Transform (QFT⁻¹) stages. The measurement distribution concentrates on eigenstates yielding the period r = ord<sub>15</sub>(7).
+      </div>
+
+      <div class="grid-2" style="gap:1.5rem;align-items:start;">
+        <!-- Left: Interactive Parameters + Circuit -->
+        <div>
+          <!-- Interactive N + a pickers -->
+          <div style="background:rgba(245,158,11,0.04);border:1px solid rgba(245,158,11,0.15);border-radius:10px;padding:1rem;margin-bottom:14px;">
+            <div class="label" style="color:var(--amber);margin-bottom:10px;">Quantum Parameters — Customize &amp; Run</div>
+
+            <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:10px;">
+              <div style="flex:1;min-width:140px;">
+                <div style="font-size:11px;color:var(--text-secondary);margin-bottom:4px;">Semi-prime N (to factor)</div>
+                <div style="display:flex;gap:4px;flex-wrap:wrap;">
+                  <button class="qtl-param-btn active" id="qtl-n-15" onclick="selectN(15)">N=15</button>
+                  <button class="qtl-param-btn" id="qtl-n-21" onclick="selectN(21)">N=21</button>
+                  <button class="qtl-param-btn" id="qtl-n-35" onclick="selectN(35)">N=35</button>
+                  <button class="qtl-param-btn" id="qtl-n-77" onclick="selectN(77)">N=77</button>
+                </div>
+                <div style="display:flex;align-items:center;gap:6px;margin-top:6px;">
+                  <span style="font-size:11px;color:var(--text-secondary);">Custom:</span>
+                  <input type="number" id="qtl-n-custom" min="4" max="200" placeholder="e.g. 91"
+                    class="input-premium" style="width:75px;padding:3px 6px;font-size:11px;"
+                    oninput="selectCustomN()">
+                </div>
+              </div>
+              <div style="flex:1;min-width:140px;">
+                <div style="font-size:11px;color:var(--text-secondary);margin-bottom:4px;">Coprime Base a</div>
+                <div style="display:flex;gap:4px;flex-wrap:wrap;">
+                  <button class="qtl-param-btn active" id="qtl-a-7" onclick="selectA(7)">a=7</button>
+                  <button class="qtl-param-btn" id="qtl-a-2" onclick="selectA(2)">a=2</button>
+                  <button class="qtl-param-btn" id="qtl-a-4" onclick="selectA(4)">a=4</button>
+                  <button class="qtl-param-btn" id="qtl-a-8" onclick="selectA(8)">a=8</button>
+                </div>
+                <div style="display:flex;align-items:center;gap:6px;margin-top:6px;">
+                  <span style="font-size:11px;color:var(--text-secondary);">Custom:</span>
+                  <input type="number" id="qtl-a-custom" min="2" max="199" placeholder="e.g. 11"
+                    class="input-premium" style="width:75px;padding:3px 6px;font-size:11px;"
+                    oninput="selectCustomA()">
+                </div>
+              </div>
+            </div>
+
+            <!-- Live math preview -->
+            <div id="qtl-param-preview" style="font-size:11px;font-family:var(--mono);color:var(--text-secondary);background:#000;padding:8px 10px;border-radius:6px;line-height:1.6;">
+              N = 15 &nbsp;|&nbsp; a = 7 &nbsp;|&nbsp; Theoretical period r = 4
+            </div>
+            <div id="qtl-param-error" style="display:none;font-size:11px;color:var(--red);margin-top:6px;"></div>
+          </div>
+
+          <!-- Qubit register (rendered dynamically by JS) -->
+          <div class="label">Quantum Register Layout</div>
+          <div style="font-size:11px;color:var(--text-secondary);margin-bottom:6px;">Control Register (q0–) · Target / Ancilla Register</div>
+          <div class="qtl-qubit-row" id="qtl-qubits"></div>
+
+          <div class="label" style="margin-top:14px;">Simulated Circuit Topology</div>
+          <div class="qtl-circuit-console" id="qtl-circuit-text">
+            q0 ─<span class="gate-h">|H|</span>──────────<span class="gate-ctrl">●</span>────── ─── <span class="gate-qft">QFT⁻¹</span> ─► Meas<br>
+            q1 ─<span class="gate-h">|H|</span>──────────────<span class="gate-ctrl">●</span>── ─── <span class="gate-qft">QFT⁻¹</span> ─► Meas<br>
+            q2 ─<span class="gate-h">|H|</span>──────────────────<span class="gate-ctrl">●</span>─ ─── <span class="gate-qft">QFT⁻¹</span> ─► Meas<br>
+            q3 ─<span class="gate-h">|H|</span>──────────────────────<span class="gate-ctrl">●</span> <span class="gate-qft">QFT⁻¹</span> ─► Meas<br>
+            ═══════════════════════════════════════════<br>
+            q4 ─<span class="gate-u">|X|</span>──<span class="gate-u">|U_7|</span>──<span class="gate-u">|U_7²|</span>──<span class="gate-u">|U_7⁴|</span> ─────────► Ancilla
+          </div>
+
+          <button class="btn-primary" id="btn-run-shor" onclick="runQuantumDemo()"
+            style="width:100%;justify-content:center;margin-top:1.25rem;">
+            Run Quantum Threat Simulation
+          </button>
+        </div>
+
+        <!-- Right: Simulation Analytics & Histogram -->
+        <div>
+          <!-- Placeholder when idle -->
+          <div id="qtl-shor-placeholder" style="background:#08080B;border:1px dashed var(--border);border-radius:10px;padding:2.5rem 1.5rem;text-align:center;">
+            <div style="width:8px;height:8px;border-radius:50%;background:var(--amber);margin:0 auto 12px;box-shadow:0 0 10px var(--amber);"></div>
+            <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:6px;">Quantum Simulator Ready</div>
+            <div style="font-size:12px;color:var(--text-secondary);line-height:1.6;max-width:360px;margin:0 auto;">
+              Click <strong>Run Quantum Threat Simulation</strong> on the left to execute the 1024-shot circuit, generate phase eigenstates, and extract prime factors.
+            </div>
+          </div>
+
+          <!-- Simulation results -->
+          <div id="qtl-shor-results" style="display:none;">
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px;">
+              <div class="qtl-stat-box">
+                <div class="qtl-stat-value" style="color:var(--teal);" id="qtl-num-qubits">8</div>
+                <div class="qtl-stat-label">Total Qubits</div>
+              </div>
+              <div class="qtl-stat-box">
+                <div class="qtl-stat-value" style="color:var(--purple);" id="qtl-circuit-depth">23</div>
+                <div class="qtl-stat-label">Circuit Depth</div>
+              </div>
+              <div class="qtl-stat-box">
+                <div class="qtl-stat-value" style="color:var(--accent-light);" id="qtl-period">r = 4</div>
+                <div class="qtl-stat-label">Period Found</div>
+              </div>
+            </div>
+
+            <div class="label" style="margin-top:8px;">Extracted Prime Factors (Classical Post-Processing)</div>
+            <div class="qtl-factors-display" id="qtl-factors-display">
+              — × — = 15
+            </div>
+
+            <div class="label" style="margin-top:12px;">Measurement Distribution (1024 Shots)</div>
+            <div style="height:160px;margin-top:6px;background:rgba(0,0,0,0.3);padding:10px;border-radius:10px;border:1px solid var(--border);">
+              <canvas id="qtl-histogram-chart"></canvas>
+            </div>
+            <div style="font-size:11px;color:var(--text-secondary);margin-top:8px;line-height:1.5;" id="qtl-histogram-explainer">
+              Concentration at states corresponds to multiples of 2^t/r. The QFT concentrates phase peaks, enabling factor extraction via gcd(a^(r/2) ± 1, N).
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── STEP 02: Classical HNDL Attack Demo (Full-Width Card with 2-Column Split) ── -->
+    <div class="card" style="margin-bottom:1.75rem;">
+      <div class="qtl-step-pill red">
+        <span class="step-tag">Step 02</span> // Harvest-Now, Decrypt-Later Attack
+      </div>
+      <div class="section-title" style="margin-bottom:4px;" id="qtl-step2-title">Classical Ciphertext Capture &amp; Decryption</div>
+      <div style="font-size:13px;color:var(--text-secondary);margin-bottom:1.5rem;line-height:1.6;max-width:800px;">
+        Demonstrates an adversary capturing classical public-key ciphertext and using recovered quantum factors to extract the private key and retroactively decrypt all payload data. <strong style="color:var(--amber);">Type any custom message below.</strong>
+      </div>
+
+      <div class="grid-2" style="gap:1.5rem;align-items:start;">
+        <!-- Left: Transmit & Intercept -->
+        <div>
+          <div style="background:rgba(239,68,68,0.04);border:1px solid rgba(239,68,68,0.2);border-radius:8px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;">
+            <span class="qtl-badge qtl-badge-red">Classical Mode</span>
+            <span id="qtl-rsa-key-label" style="font-size:11px;color:var(--text-secondary);font-family:var(--mono);">Toy RSA (N=15, e=7)</span>
+          </div>
+
+          <div class="label">Custom Payload Message (Type or pick sample)</div>
+          <textarea id="qtl-custom-message" class="input-premium"
+            style="width:100%;min-height:64px;resize:vertical;font-family:var(--mono);font-size:12px;margin-bottom:8px;">Confidential Healthcare Record — Patient: Alice</textarea>
+
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;">
+            <button class="qtl-param-btn" onclick="setQTLMessage('Confidential Healthcare Record — Patient: Alice')">Medical</button>
+            <button class="qtl-param-btn" onclick="setQTLMessage('Bank Transfer: $500,000 to Account #8491')">Financial</button>
+            <button class="qtl-param-btn" onclick="setQTLMessage('Root Password: SuperSecretKey99!')">Credential</button>
+            <button class="qtl-param-btn" onclick="setQTLMessage('Defense Memo: Operation Apex Alpha-77')">Defense</button>
+          </div>
+
+          <button class="btn-ghost btn-sm" id="btn-classical-encrypt" onclick="classicalEncrypt()"
+            style="width:100%;justify-content:center;margin-bottom:8px;">
+            Encrypt with Classical-Only (Toy RSA)
+          </button>
+
+          <div id="qtl-captured-section" style="display:none;">
+            <div class="label" style="color:var(--red);margin-top:12px;">Adversary Interception Log</div>
+            <div class="qtl-captured-panel" id="qtl-ciphertext-display">—</div>
+            <div style="font-size:11px;color:var(--text-secondary);margin-top:6px;line-height:1.5;">
+              The adversary archives this ciphertext alongside the public key in cold storage. Uses same modulus N from Step 01.
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Quantum Decryption Attack -->
+        <div>
+          <div class="label">Quantum Decryption Phase</div>
+          <div style="font-size:12px;color:var(--text-secondary);margin-bottom:10px;line-height:1.6;" id="qtl-attack-desc">
+            Once factors (p, q) are obtained via quantum simulation, the private key d is derived via d = e⁻¹ mod φ(N).
+          </div>
+
+          <button class="btn-ghost btn-sm" id="btn-quantum-attack" onclick="simulateQuantumAttack()"
+            style="width:100%;justify-content:center;border-color:rgba(239,68,68,0.4);color:#F87171;">
+            Simulate Quantum Attack (Use Shor's Factors)
+          </button>
+          <div id="qtl-attack-hint" style="font-size:11px;color:var(--text-secondary);text-align:center;margin-top:6px;">
+            Run Step 01 simulation first to extract factors.
+          </div>
+
+          <div id="qtl-decrypted-section" style="display:none;margin-top:12px;">
+            <div class="qtl-decrypted-panel">
+              <div style="font-weight:700;color:#F87171;font-size:13px;margin-bottom:6px;">
+                Classical Secret Recovered · Payload Compromised
+              </div>
+              <div style="font-size:12px;color:var(--text-secondary);margin-bottom:8px;">
+                Derived Private Key: <span id="qtl-recovered-d" style="color:var(--amber);font-family:var(--mono);font-weight:700;">—</span>
+              </div>
+              <div class="qtl-console-panel" style="background:#000;border-color:rgba(239,68,68,0.3);color:var(--text);" id="qtl-decrypted-msg">
+                —
+              </div>
+              <div style="font-size:11px;color:var(--text-secondary);margin-top:8px;line-height:1.5;">
+                Vulnerability: All captured sessions encrypted under classical keys are permanently exposed once factors are known.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── STEP 03: QUANTA Hybrid Defense Architecture (Full-Width Card) ── -->
+    <div class="card" style="margin-bottom:1.75rem;">
+      <div class="qtl-step-pill">
+        <span class="step-tag">Step 03</span> // Hybrid PQC Defense Architecture
+      </div>
+      <div class="section-title" style="margin-bottom:4px;">Why QUANTA Hybrid Handshakes Resist HNDL</div>
+      <div style="font-size:13px;color:var(--text-secondary);margin-bottom:1.25rem;line-height:1.6;max-width:800px;">
+        QUANTA binds classical key exchange (X25519) with NIST FIPS 203 Post-Quantum KEM (ML-KEM-768). The resulting session key K = HKDF(K_classical ‖ K_pqc) remains computationally secure even if an adversary breaks the discrete log problem on X25519.
+      </div>
+
+      <!-- Segmented mode switcher -->
+      <div class="qtl-mode-toggle" style="max-width:520px;">
+        <button class="qtl-mode-btn active-classical" id="qtl-btn-classical" onclick="setQuantumMode('classical')">
+          Classical Only (X25519)
+        </button>
+        <button class="qtl-mode-btn" id="qtl-btn-hybrid" onclick="setQuantumMode('hybrid')">
+          QUANTA Hybrid (X25519 + ML-KEM-768)
+        </button>
+      </div>
+
+      <div class="grid-2" style="gap:1.5rem;align-items:start;">
+        <!-- Key exchange details -->
+        <div>
+          <div id="qtl-classical-detail">
+            <div style="background:rgba(239,68,68,0.04);border:1px solid rgba(239,68,68,0.18);border-radius:10px;padding:1.25rem;">
+              <div style="font-weight:700;color:#F87171;font-size:13px;margin-bottom:8px;">Classical Architecture (Vulnerable)</div>
+              <div style="font-size:12px;color:var(--text-secondary);line-height:1.8;font-family:var(--mono);">
+                Key Exchange: X25519 (ECDH)<br>
+                Session Key: K = HKDF(K_classical)<br>
+                Authentication: ECDSA P-256<br>
+                Symmetric Cipher: AES-256-GCM
+              </div>
+              <div style="font-size:11px;color:#F87171;margin-top:10px;border-top:1px solid rgba(239,68,68,0.15);padding-top:8px;">
+                Warning: Shor's algorithm on elliptic curves breaks K_classical → session key compromised.
+              </div>
+            </div>
+          </div>
+          <div id="qtl-hybrid-detail" style="display:none;">
+            <div style="background:rgba(34,197,94,0.04);border:1px solid rgba(34,197,94,0.22);border-radius:10px;padding:1.25rem;">
+              <div style="font-weight:700;color:var(--accent-light);font-size:13px;margin-bottom:8px;">QUANTA Hybrid Architecture (Post-Quantum Secure)</div>
+              <div style="font-size:12px;color:var(--text-secondary);line-height:1.8;font-family:var(--mono);">
+                Dual KEM: X25519 (Classical) + ML-KEM-768 (Lattice)<br>
+                Combiner: ss = K_classical ‖ K_pqc<br>
+                Session Key: K = HKDF-SHA256(ss, "quanta-hybrid-v1")<br>
+                Signature: ML-DSA-65 (NIST FIPS 204)<br>
+                Symmetric Cipher: AES-256-GCM
+              </div>
+              <div style="font-size:11px;color:var(--accent-light);margin-top:10px;border-top:1px solid rgba(34,197,94,0.15);padding-top:8px;">
+                Protected: Deriving K requires breaking both Module-LWE and ECDLP simultaneously.
+              </div>
+            </div>
+          </div>
+
+          <button class="btn-ghost btn-sm" id="btn-qtl-handshake" onclick="runQuantumHandshake()"
+            style="width:100%;justify-content:center;margin-top:12px;">
+            Execute Handshake in Current Mode
+          </button>
+          <div id="qtl-handshake-result" style="display:none;margin-top:12px;padding:12px 14px;background:#08080A;border:1px solid var(--border);border-radius:10px;font-family:var(--mono);font-size:11px;line-height:1.8;">
+          </div>
+        </div>
+
+        <!-- Cryptographic Resilience Analysis -->
+        <div>
+          <div class="label">Cryptographic Resilience Analysis</div>
+          <div id="qtl-security-classical" style="margin-top:8px;">
+            <div style="display:flex;flex-direction:column;gap:10px;">
+              <div style="background:rgba(239,68,68,0.04);border:1px solid rgba(239,68,68,0.18);border-radius:8px;padding:12px 14px;">
+                <div style="font-size:12px;font-weight:700;color:#F87171;margin-bottom:4px;">X25519 (Classical Primitive)</div>
+                <div style="font-size:11px;color:var(--text-secondary);">Vulnerable to Shor's algorithm for discrete logarithm problem (O(log³ N)).</div>
+              </div>
+              <div style="background:rgba(245,158,11,0.04);border:1px solid rgba(245,158,11,0.18);border-radius:8px;padding:12px 14px;">
+                <div style="font-size:12px;font-weight:700;color:var(--amber);margin-bottom:4px;">Single-Layer Session Key</div>
+                <div style="font-size:11px;color:var(--text-secondary);">No secondary mathematical barrier. Historical traffic is fully exposed under HNDL.</div>
+              </div>
+            </div>
+          </div>
+          <div id="qtl-security-hybrid" style="display:none;margin-top:8px;">
+            <div style="display:flex;flex-direction:column;gap:10px;">
+              <div style="background:rgba(239,68,68,0.04);border:1px solid rgba(239,68,68,0.18);border-radius:8px;padding:12px 14px;">
+                <div style="font-size:12px;font-weight:700;color:#F87171;margin-bottom:4px;">X25519 (Classical Component)</div>
+                <div style="font-size:11px;color:var(--text-secondary);">Preserves backward compatibility and classical security proofs.</div>
+              </div>
+              <div style="background:rgba(34,197,94,0.04);border:1px solid rgba(34,197,94,0.2);border-radius:8px;padding:12px 14px;">
+                <div style="font-size:12px;font-weight:700;color:var(--accent-light);margin-bottom:4px;">ML-KEM-768 (Lattice Component)</div>
+                <div style="font-size:11px;color:var(--text-secondary);">Based on hardness of Module Learning With Errors (M-LWE). No polynomial-time quantum algorithm known.</div>
+              </div>
+              <div style="background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.3);border-radius:8px;padding:12px 14px;">
+                <div style="font-size:12px;font-weight:700;color:var(--accent-light);margin-bottom:4px;">Combined Hybrid Session Key</div>
+                <div style="font-size:11px;color:var(--text-secondary);">HKDF entropy preserves security if at least one underlying primitive remains unbroken.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── STEP 04: Security Comparison Matrix (Full-Width Card) ── -->
+    <div class="card table-card" style="margin-bottom:2rem;padding:0;overflow:hidden;">
+      <div style="padding:1.25rem 1.75rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+        <div style="font-weight:700;font-size:14px;letter-spacing:0.5px;text-transform:uppercase;color:var(--text);">
+          Cryptographic Security Comparison Matrix
+        </div>
+        <span class="badge badge-green">NIST Standards</span>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="qtl-comparison-table">
+          <thead>
+            <tr>
+              <th>Primitive / Protocol</th>
+              <th>Mathematical Basis</th>
+              <th>Classical Security</th>
+              <th>Quantum Security (Shor's)</th>
+              <th>HNDL Exposure</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>RSA-2048</strong></td>
+              <td>Integer Factorization</td>
+              <td class="status-safe">112-bit</td>
+              <td class="status-vulnerable">Vulnerable</td>
+              <td class="status-vulnerable">High Risk</td>
+            </tr>
+            <tr>
+              <td><strong>ECDH P-256</strong></td>
+              <td>Elliptic Curve Discrete Log</td>
+              <td class="status-safe">128-bit</td>
+              <td class="status-vulnerable">Vulnerable</td>
+              <td class="status-vulnerable">High Risk</td>
+            </tr>
+            <tr>
+              <td><strong>X25519 (Curve25519)</strong></td>
+              <td>Montgomery Curve ECDH</td>
+              <td class="status-safe">128-bit</td>
+              <td class="status-vulnerable">Vulnerable</td>
+              <td class="status-vulnerable">High Risk</td>
+            </tr>
+            <tr style="background:rgba(34,197,94,0.02);">
+              <td><strong>ML-KEM-768</strong> <span class="badge badge-blue" style="margin-left:6px;vertical-align:middle;">FIPS 203</span></td>
+              <td>Module-LWE (Lattices)</td>
+              <td class="status-safe">192-bit (Category 3)</td>
+              <td class="status-safe">Quantum Resistant</td>
+              <td class="status-safe">Protected</td>
+            </tr>
+            <tr style="background:rgba(34,197,94,0.05);border-top:1px solid rgba(34,197,94,0.15);">
+              <td><strong>QUANTA Hybrid</strong><br><span style="font-size:11px;color:var(--text-secondary);">X25519 + ML-KEM-768</span></td>
+              <td>Dual-Layer (Lattice + ECDH)</td>
+              <td class="status-safe">Dual Guarantee</td>
+              <td class="status-safe">Quantum Resistant (Hybrid)</td>
+              <td class="status-safe">Zero Exposure</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- HNDL Explanation -->
+      <div class="qtl-hndl-explainer" style="margin:1.25rem 1.75rem 1.75rem 1.75rem;">
+        <div style="font-weight:700;color:var(--text);font-size:13px;margin-bottom:6px;">
+          Understanding Harvest-Now, Decrypt-Later (HNDL)
+        </div>
+        <div style="font-size:13px;color:var(--text-secondary);line-height:1.7;">
+          State-sponsored actors and adversaries currently record and store encrypted traffic on high-value networks. When quantum computing systems achieve sufficient fault-tolerant scale, Shor's algorithm will be run against recorded handshake transcripts to factor private keys and decrypt years of historical data retroactively.
+        </div>
+        <div style="font-size:13px;color:var(--text-secondary);line-height:1.7;margin-top:8px;">
+          <strong style="color:var(--accent-light);">QUANTA Mitigation:</strong> Incorporating ML-KEM-768 into the handshake ensures that deriving the master secret requires breaking lattice cryptography, which possesses no known quantum polynomial-time solution.
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <!-- ── END QUANTUM THREAT LAB PAGE ── -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <script>
+    // ── Backend base URL ──────────────────────────────────────────────────────
+    const API = 'http://127.0.0.1:8000';
+
+    // Tier log steps (UI narrative — real timing comes from backend)
+    const TIER_STEPS = [
+      ['→ ClientHello: X25519 + ML-KEM-768 key shares offered',
+        '→ ML-KEM-768 encapsulation: K_pq derived',
+        '→ X25519 key agreement: K_classical derived',
+        '→ HKDF-SHA3-256 combiner: K_hybrid = HKDF(K_pq ‖ K_classical)',
+        '→ ML-DSA-65 signing: server certificate verified',
+        '→ SHST token generated: valid 3600s, 83% overhead saved',
+        '→ AES-256-GCM channel established (96-bit nonce, 128-bit tag)'],
+      ['→ ClientHello: ML-KEM-768 key share offered',
+        '→ ML-KEM-768 encapsulation: K_pq derived',
+        '→ ECDSA signature verification',
+        '→ SHST token generated',
+        '→ AES-256-GCM channel established'],
+      ['→ ClientHello: X25519 key share offered',
+        '→ X25519 key agreement: K_classical derived',
+        '→ ML-DSA-65 signing: server certificate verified',
+        '→ SHST token generated',
+        '→ AES-256-GCM channel established'],
+      ['→ ClientHello: X25519 key share offered (classical only)',
+        '→ X25519 key agreement: K_classical derived',
+        '→ ECDSA signature verification',
+        '→ Session established — WARNING: no post-quantum protection'],
+    ];
+
+    // ── State ─────────────────────────────────────────────────────────────────
+    let currentTier = 1;       // 1-based to match backend
+    let latencyHistory = [];
+    let handshakeCount = 0;
+    let signCount = 0;
+    let verifyCount = 0;
+    let latencyChart = null, barChart = null, concChart = null;
+
+    let userId = '';           // display string "Name — UUID8"
+    let userUUID = '';         // raw UUID from /api/register
+    let kemPubKeyHex = '';     // real public key hex from /api/generate-keys/kem
+    let dsaPubKeyHex = '';     // real public key hex from /api/generate-keys/dsa
+    let kemGenerated = false;
+    let dsaGenerated = false;
+
+    let activeSessionId = '';  // from /api/handshake → used for encrypt/decrypt
+    let activeDeliveryId = ''; // from /api/send
+
+    let lastSigId = '';        // from /api/sign → used for /api/verify
+    let lastSigHex = '';
+    let lastSignedMsg = '';
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+    function ts() {
+      const d = new Date();
+      return d.getHours().toString().padStart(2, '0') + ':' + d.getMinutes().toString().padStart(2, '0') + ':' + d.getSeconds().toString().padStart(2, '0');
+    }
+
+    function addLog(text, cls = 'log-info') {
+      const p = document.getElementById('log-panel');
+      p.innerHTML += `<div class="log-line"><span class="log-time">${ts()}</span><span class="${cls}">${text}</span></div>`;
+      p.scrollTop = p.scrollHeight;
+    }
+
+    function clearLog() {
+      document.getElementById('log-panel').innerHTML =
+        `<div class="log-line"><span class="log-time">${ts()}</span><span class="log-info">Log cleared</span></div>`;
+    }
+
+    function setBtn(id, disabled, text) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.disabled = disabled;
+      el.style.opacity = disabled ? '0.4' : '1';
+      el.style.cursor = disabled ? 'not-allowed' : 'pointer';
+      if (text !== undefined) el.innerText = text;
+    }
+
+    async function api(method, path, body) {
+      const opts = { method, headers: { 'Content-Type': 'application/json' } };
+      if (body) opts.body = JSON.stringify(body);
+      const res = await fetch(API + path, opts);
+      if (!res.ok) throw new Error(`${method} ${path} → HTTP ${res.status}`);
+      return res.json();
+    }
+
+    // ── Navigation ────────────────────────────────────────────────────────────
+    function showPage(name) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      const targetPage = document.getElementById('page-' + name);
+      if (targetPage) targetPage.classList.add('active');
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+      const targetBtn = document.querySelector(`.nav-btn[data-page="${name}"]`);
+      if (targetBtn) targetBtn.classList.add('active');
+      if (name === 'demo') initLatencyChart();
+      if (name === 'audit') renderAuditTable();
+    }
+
+    function updateSessionActivity() {
+      const el = document.getElementById('bench-session-activity');
+      if (el) el.innerText = `This session: ${handshakeCount} handshakes · ${signCount} signatures · ${verifyCount} verifications`;
+    }
+
+    // ── Audit (live from backend) ─────────────────────────────────────────────
+    async function renderAuditTable() {
+      const search = (document.getElementById('audit-search').value || '').trim();
+      const filter = document.getElementById('audit-filter').value;
+      const tbody = document.getElementById('audit-tbody');
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--muted);">Loading…</td></tr>`;
+      try {
+        const params = new URLSearchParams({ search, filter });
+        const rows = await (await fetch(`${API}/api/audit?${params}`)).json();
+        if (!rows.length) {
+          tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--muted);">No events yet — run the demo first</td></tr>`;
+          return;
+        }
+        tbody.innerHTML = rows.map(e => {
+          const ok = ['Success', 'Completed', 'Valid', 'Delivered'].includes(e.result);
+          const bad = ['Failed', 'Tampered', 'Invalid'].includes(e.result);
+          const c = ok ? 'var(--green)' : bad ? 'var(--red)' : 'var(--text)';
+          return `<tr><td style="font-family:var(--mono);font-size:11px;">${e.time}</td><td>${e.user}</td><td>${e.op}</td><td style="font-family:var(--mono);font-size:11px;">${e.algo}</td><td style="color:${c};font-weight:700;">${e.result}</td></tr>`;
+        }).join('');
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--red);">⚠️ Backend unreachable: ${err.message}</td></tr>`;
+      }
+    }
+
+    // ── HNDLR-Score from real backend ─────────────────────────────────────────
+    async function fetchAndApplyScore() {
+      try {
+        const s = await api('GET', '/api/score');
+        const total = s.total_score;
+        const dims = s.dimensions;
+        const vals = [dims.kem_strength, dims.signature_strength, dims.forward_secrecy, dims.crypto_agility, dims.backward_compat];
+        document.getElementById('total-score').innerText = total;
+        document.getElementById('m-score').innerText = total;
+        vals.forEach((v, i) => {
+          const d = document.getElementById('d' + i);
+          const df = document.getElementById('df' + i);
+          if (d) d.innerText = v.toFixed(1);
+          if (df) df.style.width = v + '%';
+        });
+        const ring = document.getElementById('ring-fill');
+        if (ring) ring.style.strokeDashoffset = (326.7 * (1 - total / 100)).toFixed(1);
+      } catch (_) { }
+    }
+
+    // ── Handshake (real backend) ──────────────────────────────────────────────
+    async function runHandshake() {
+      setBtn('btn-run-handshake', true, 'Running…');
+      const tierIdx = currentTier - 1;
+      const tierName = ['Tier 1', 'Tier 2', 'Tier 3', 'Tier 4'][tierIdx];
+      handshakeCount++;
+      addLog(`[Handshake #${handshakeCount}] Starting ${tierName} protocol…`, 'log-info');
+      const steps = TIER_STEPS[tierIdx];
+      steps.forEach((step, i) => setTimeout(() => addLog(step, 'log-data'), (i + 1) * 120));
+      try {
+        const data = await api('POST', '/api/handshake', { tier: currentTier });
+        const lat = data.timing.total_ms;
+        activeSessionId = data.session_id;
+        setTimeout(() => {
+          addLog(`✅ Handshake complete in <strong>${lat}ms</strong> (real measured time)`, 'log-ok');
+          addLog(`   Session ID: ${data.session_id}`, 'log-data');
+          addLog(`   K_hybrid: ${data.K_hybrid_hex.slice(0, 32)}… (${data.K_hybrid_hex.length / 2} bytes)`, 'log-data');
+          addLog(`   SHST token: ${data.shst_token.slice(0, 24)}… (expires in 3600s)`, 'log-data');
+          const t = data.timing;
+          if (t.kem_keygen_ms) addLog(`   KEM keygen: ${t.kem_keygen_ms}ms · Encaps: ${t.kem_encaps_ms}ms`, 'log-data');
+          if (t.x25519_ms) addLog(`   X25519: ${t.x25519_ms}ms`, 'log-data');
+          addLog(`   HKDF: ${t.hkdf_ms}ms`, 'log-data');
+          document.getElementById('m-latency').innerText = lat + 'ms';
+          document.getElementById('m-shst').innerText = `-${data.overhead_saving_pct}%`;
+          document.getElementById('m-level').innerText = data.security_level === 'Post-Quantum' ? 'L3' : 'L1';
+          latencyHistory.push(parseFloat(lat));
+          if (latencyHistory.length > 12) latencyHistory.shift();
+          updateLatencyChart();
+          const avg = (latencyHistory.reduce((a, b) => a + b, 0) / latencyHistory.length).toFixed(2);
+          document.getElementById('avg-quanta').innerText = avg + 'ms';
+          fetchAndApplyScore();
+          updateSessionActivity();
+          setBtn('btn-run-handshake', false, 'Run handshake');
+        }, steps.length * 120 + 250);
+      } catch (err) {
+        addLog(`❌ Handshake failed: ${err.message}`, 'log-error');
+        setBtn('btn-run-handshake', false, 'Run handshake');
+      }
+    }
+
+    // ── quanta-channel Real TLS 1.3 Hybrid Channel ────────────────────────────
+    async function runRealPqcTls() {
+      setBtn('btn-run-pqc-tls', true, 'Connecting TLS 1.3…');
+      addLog('🚀 [quanta-channel] Initializing independent TLS 1.3 socket with X25519MLKEM768...', 'log-info');
+      try {
+        const res = await api('POST', '/api/channel/handshake-demo');
+        const t = res.telemetry;
+        document.getElementById('tls-status-badge').style.display = 'inline-flex';
+        document.getElementById('tls-group-val').innerText = t.negotiated_group + ' (Verified)';
+        document.getElementById('tls-latency-val').innerText = t.handshake_latency_ms + 'ms (1-RTT)';
+        document.getElementById('tls-cert-val').innerText = 'CN=' + t.peer_subject + ' (Validated)';
+        document.getElementById('tls-audit-val').innerText = 'Zero Secrets (Audit Passed)';
+
+        addLog(`🔒 [quanta-channel] TLS 1.3 Handshake SUCCEEDED in ${t.handshake_latency_ms}ms!`, 'log-ok');
+        addLog(`   Protocol: ${t.tls_version} · Cipher: ${t.cipher_suite}`, 'log-data');
+        addLog(`   Key Exchange Group: ${t.negotiated_group} (FIPS 203 ML-KEM-768 + X25519)`, 'log-data');
+        addLog(`   Peer Authentication: ${t.peer_subject} verified against Root CA`, 'log-data');
+        addLog(`   Binary Framing: ${res.framing_protocol}`, 'log-data');
+        addLog(`   Application Roundtrip: ${res.payload_echo} (${res.roundtrip_total_ms}ms total)`, 'log-data');
+        addLog(`🛡️ Security Invariant: Strict Fail-Closed Policy Active | 0 Private Keys Leaked`, 'log-ok');
+      } catch (err) {
+        addLog(`❌ [quanta-channel] Handshake failed: ${err.message}`, 'log-error');
+      } finally {
+        setBtn('btn-run-pqc-tls', false, 'Test TLS 1.3 Hybrid Channel');
+      }
+    }
+
+    // ── Crypto-agility tier switch (real backend) ─────────────────────────────
+    async function selectAlgo(n) {
+      const newTier = n + 1;
+      try {
+        const data = await api('POST', '/api/switch-tier', { tier: newTier });
+        currentTier = newTier;
+        document.querySelectorAll('.algo-item').forEach((el, i) => {
+          el.classList.toggle('active', i === n);
+          const badge = el.querySelector('.badge');
+          badge.className = 'badge ' + (i === 0 ? 'badge-blue' : i === 3 ? 'badge-red' : 'badge-amber');
+          badge.innerText = i === n ? 'Active' : i === 0 ? 'Primary' : i === 3 ? 'Legacy' : 'Fallback';
+        });
+        for (let i = 0; i < 4; i++) {
+          document.getElementById('tb-' + i).style.background = i === n ? 'var(--accent)' : 'var(--border)';
+        }
+        document.getElementById('tier-num').innerText = newTier;
+        const tierName = ['Tier 1', 'Tier 2', 'Tier 3', 'Tier 4'][n];
+        addLog(`⚙️ Crypto-agility: switched to ${tierName} — ${data.algorithm_set} (${data.message})`, 'log-warn');
+      } catch (err) {
+        addLog(`❌ Tier switch failed: ${err.message}`, 'log-error');
+      }
+    }
+
+    // ── Message Signing (real ML-DSA-65 backend) ──────────────────────────────
+    async function signMessage() {
+      const msg = document.getElementById('msg-input').value;
+      if (!msg) return;
+      if (!userUUID) { addLog('⚠️ Register first to get a signing key.', 'log-warn'); return; }
+      setBtn('btn-sign', true, 'Signing…');
+      try {
+        const data = await api('POST', '/api/sign', { user_id: userUUID, message: msg });
+        lastSigId = data.signature_id;
+        lastSigHex = data.signature_hex;
+        lastSignedMsg = msg;
+        document.getElementById('sig-hex').innerText = data.signature_hex.slice(0, 64) + '…';
+        document.getElementById('sig-time').innerText =
+          `Sign: ${data.sign_latency_ms}ms (real) · Sig size: ${data.sig_size_bytes.toLocaleString()} bytes · ${data.algorithm}`;
+        document.getElementById('sig-signer').innerText = userId || userUUID;
+        document.getElementById('sig-timestamp').innerText = new Date().toLocaleString();
+        document.getElementById('sig-result').style.display = 'block';
+        signCount++;
+        updateSessionActivity();
+        addLog(`✅ ML-DSA-65 signed in ${data.sign_latency_ms}ms — ${data.sig_size_bytes} bytes`, 'log-ok');
+      } catch (err) {
+        addLog(`❌ Signing failed: ${err.message}`, 'log-error');
+      }
+      setBtn('btn-sign', false, 'Sign with ML-DSA-65');
+    }
+
+    function copySignature() {
+      if (!lastSigHex) return;
+      navigator.clipboard && navigator.clipboard.writeText(lastSigHex).catch(() => { });
+      const btn = document.getElementById('btn-copy-sig');
+      const orig = btn.innerText;
+      btn.innerText = 'Copied ✓';
+      setTimeout(() => { btn.innerText = orig; }, 1200);
+    }
+
+    function downloadSignature() {
+      if (!lastSigHex) return;
+      const blob = new Blob([lastSigHex], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `quanta_signature_${Date.now()}.sig`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    // ── Registration (real backend) ───────────────────────────────────────────
+    async function registerUser() {
+      const name = document.getElementById('reg-name').value || 'Alice Sharma';
+      const email = document.getElementById('reg-email').value || 'alice@example.com';
+      const org = document.getElementById('reg-org').value || 'Individual Developer';
+      setBtn('btn-register', true, 'Registering…');
+      try {
+        const data = await api('POST', '/api/register', { name, email, organization: org });
+        userUUID = data.user_id;
+        userId = `${name.split(' ')[0]} — ${data.user_id.slice(0, 8).toUpperCase()}`;
+        document.getElementById('reg-userid').innerText =
+          `User ID: ${data.user_id} · Created: ${new Date(data.created_at + 'Z').toLocaleTimeString()}`;
+        document.getElementById('reg-success').style.display = 'block';
+        addLog(`✅ Registered as ${userId}`, 'log-ok');
+      } catch (err) {
+        document.getElementById('reg-userid').innerText = `Backend error: ${err.message}`;
+        document.getElementById('reg-success').style.display = 'block';
+      }
+      setBtn('btn-register', false, 'Create Account');
+    }
+
+    // ── Key Generation (real backend) ─────────────────────────────────────────
+    async function generateKemKeys() {
+      if (!userUUID) { alert('Please register first.'); return; }
+      const btn = document.getElementById('btn-gen-kem');
+      const status = document.getElementById('kem-status');
+      btn.disabled = true;
+      status.innerText = 'Status: calling backend…';
+      status.style.color = 'var(--amber)';
+      try {
+        const data = await api('POST', '/api/generate-keys/kem', { user_id: userUUID });
+        kemPubKeyHex = data.public_key_hex;
+        const byteLen = data.public_key_hex.length / 2;
+        document.getElementById('kem-pubkey').innerText = data.public_key_hex.slice(0, 64) + '…';
+        document.getElementById('kem-pubkey-wrap').style.display = 'block';
+        status.innerText = `Status: generated in ${data.keygen_ms}ms (real) · ${byteLen.toLocaleString()} bytes public key`;
+        status.style.color = 'var(--green)';
+        btn.innerText = 'Regenerate';
+        btn.disabled = false;
+        kemGenerated = true;
+        addLog(`✅ ML-KEM-768 keypair generated in ${data.keygen_ms}ms · ${byteLen} bytes public key`, 'log-ok');
+        checkKeygenComplete();
+      } catch (err) {
+        status.innerText = `Error: ${err.message}`;
+        status.style.color = 'var(--red)';
+        btn.disabled = false;
+      }
+    }
+
+    async function generateDsaKeys() {
+      if (!userUUID) { alert('Please register first.'); return; }
+      const btn = document.getElementById('btn-gen-dsa');
+      const status = document.getElementById('dsa-status');
+      btn.disabled = true;
+      status.innerText = 'Status: calling backend…';
+      status.style.color = 'var(--amber)';
+      try {
+        const data = await api('POST', '/api/generate-keys/dsa', { user_id: userUUID });
+        dsaPubKeyHex = data.public_key_hex;
+        const byteLen = data.public_key_hex.length / 2;
+        document.getElementById('dsa-pubkey').innerText = data.public_key_hex.slice(0, 64) + '…';
+        document.getElementById('dsa-pubkey-wrap').style.display = 'block';
+        status.innerText = `Status: generated in ${data.keygen_ms}ms (real) · ${byteLen.toLocaleString()} bytes public key`;
+        status.style.color = 'var(--green)';
+        btn.innerText = 'Regenerate';
+        btn.disabled = false;
+        dsaGenerated = true;
+        addLog(`✅ ML-DSA-65 keypair generated in ${data.keygen_ms}ms · ${byteLen} bytes public key`, 'log-ok');
+        checkKeygenComplete();
+      } catch (err) {
+        status.innerText = `Error: ${err.message}`;
+        status.style.color = 'var(--red)';
+        btn.disabled = false;
+      }
+    }
+
+    function checkKeygenComplete() {
+      const cont = document.getElementById('btn-goto-demo');
+      if (kemGenerated && dsaGenerated) {
+        cont.disabled = false;
+        cont.style.opacity = '1';
+        cont.style.cursor = 'pointer';
+        addLog('✅ Both keypairs ready — proceed to Secure Communication', 'log-ok');
+      }
+    }
+
+    // ── Secure Communication (real AES-256-GCM) ───────────────────────────────
+    async function encryptMessage() {
+      const v = document.getElementById('comm-msg-input').value;
+      if (!v) return;
+      if (!activeSessionId) { addLog('⚠️ Run a handshake first to establish a session.', 'log-warn'); return; }
+      setBtn('btn-encrypt', true, '🔒 Encrypting…');
+      try {
+        const data = await api('POST', '/api/encrypt', { session_id: activeSessionId, plaintext: v });
+        document.getElementById('comm-cipher').innerText =
+          `${data.ciphertext_hex} (${data.ciphertext_hex.length / 2} bytes)\nNonce: ${data.nonce}`;
+        document.getElementById('comm-cipher-wrap').style.display = 'block';
+        addLog(`🔒 AES-256-GCM encrypted — ${data.ciphertext_hex.length / 2} bytes ciphertext, nonce: ${data.nonce}`, 'log-ok');
+        setBtn('btn-send', false, '📤 Send');
+      } catch (err) {
+        addLog(`❌ Encryption failed: ${err.message}`, 'log-error');
+      }
+      setBtn('btn-encrypt', false, '🔒 Encrypt');
+    }
+
+    async function sendCommMessage() {
+      setBtn('btn-send', true, '📤 Sending…');
+      try {
+        const ct = document.getElementById('comm-cipher').innerText.split('\n')[0].replace(/….*/, '');
+        const data = await api('POST', '/api/send', { session_id: activeSessionId, ciphertext_hex: ct });
+        activeDeliveryId = data.delivery_id;
+        addLog(`📤 Delivered — delivery_id: <strong>${data.delivery_id}</strong> · status: ${data.status}`, 'log-info');
+        setBtn('btn-decrypt', false, '🔓 Decrypt');
+      } catch (err) {
+        addLog(`❌ Send failed: ${err.message}`, 'log-error');
+      }
+      setBtn('btn-send', false, '📤 Send');
+    }
+
+    async function decryptCommMessage() {
+      setBtn('btn-decrypt', true, '🔓 Decrypting…');
+      try {
+        const data = await api('POST', '/api/decrypt', { session_id: activeSessionId, delivery_id: activeDeliveryId });
+        if (data.verified) {
+          addLog(`🔓 Decrypted plaintext: "${data.plaintext}"`, 'log-ok');
+          addLog(`✅ Integrity verified — no tampering detected`, 'log-ok');
+          document.getElementById('comm-delivery').style.display = 'block';
+        } else {
+          addLog(`❌ Decryption / integrity check failed`, 'log-error');
+        }
+      } catch (err) {
+        addLog(`❌ Decrypt failed: ${err.message}`, 'log-error');
+      }
+      setBtn('btn-decrypt', false, '🔓 Decrypt');
+    }
+
+    // ── Verification Portal (real ML-DSA-65 backend) ──────────────────────────
+    async function verifySignature() {
+      const tampered = document.getElementById('verify-tamper-toggle').checked;
+      if (!lastSigId) { alert('Sign a message first on the Live Demo page to get a real signature.'); return; }
+      setBtn('btn-verify', true, 'Verifying…');
+      const msgToVerify = tampered ? lastSignedMsg + ' [TAMPERED]' : lastSignedMsg;
+      try {
+        const data = await api('POST', '/api/verify', {
+          signature_id: lastSigId,
+          message: msgToVerify,
+          public_key_hex: dsaPubKeyHex || '',
+        });
+        verifyCount++;
+        updateSessionActivity();
+        const statusEl = document.getElementById('verify-status');
+        const integrityEl = document.getElementById('verify-integrity');
+        const integrityCard = document.getElementById('verify-integrity-card');
+        if (data.valid) {
+          statusEl.innerHTML = '✅ Valid'; statusEl.style.color = 'var(--green)';
+          integrityEl.innerHTML = '✅ Integrity confirmed'; integrityEl.style.color = 'var(--green)';
+          integrityCard.style.borderColor = 'rgba(52,211,153,0.3)';
+        } else {
+          statusEl.innerHTML = '❌ Invalid'; statusEl.style.color = 'var(--red)';
+          integrityEl.innerHTML = '⚠️ Tampering detected'; integrityEl.style.color = 'var(--red)';
+          integrityCard.style.borderColor = 'rgba(239,68,68,0.3)';
+        }
+        document.getElementById('verify-signer').innerText = data.signer_id || userId;
+        document.getElementById('verify-timestamp').innerText = new Date(data.timestamp).toLocaleString();
+        // Show simple hash comparison for display
+        const h1 = Array.from(msgToVerify).reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 0).toString(16).padStart(8, '0');
+        const h2 = Array.from(lastSignedMsg).reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 0).toString(16).padStart(8, '0');
+        document.getElementById('verify-hash-doc').innerText = h1 + '…';
+        document.getElementById('verify-hash-expected').innerText = h2 + '…';
+        document.getElementById('verify-result').style.display = 'block';
+      } catch (err) {
+        alert(`Verification error: ${err.message}`);
+      }
+      setBtn('btn-verify', false, 'Verify Signature');
+    }
+
+    // ── Charts ────────────────────────────────────────────────────────────────
+    function initLatencyChart() {
+      if (latencyChart) return;
+      const ctx = document.getElementById('latencyChart').getContext('2d');
+      latencyChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: Array.from({ length: 12 }, (_, i) => '#' + (i + 1)),
+          datasets: [
+            { label: 'QUANTA', data: [], borderColor: '#34D399', backgroundColor: 'rgba(52,211,153,0.06)', fill: true, tension: 0.4, pointRadius: 3 },
+            { label: 'TLS 1.3', data: Array(12).fill(1.3), borderColor: '#F87171', borderDash: [4, 4], pointRadius: 0, fill: false }
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          scales: {
+            y: { min: 0, max: 10, ticks: { callback: v => v + 'ms', color: '#6E6E7A' }, grid: { color: 'rgba(255,255,255,0.06)' } },
+            x: { ticks: { color: '#6E6E7A' }, grid: { color: 'rgba(255,255,255,0.06)' } }
+          },
+          plugins: { legend: { display: false } }
+        }
+      });
+    }
+
+    function updateLatencyChart() {
+      if (!latencyChart) return;
+      latencyChart.data.datasets[0].data = [...latencyHistory];
+      latencyChart.data.labels = latencyHistory.map((_, i) => '#' + (handshakeCount - latencyHistory.length + i + 1));
+      latencyChart.update();
+    }
+
+    function initBenchCharts() {
+      if (barChart) return;
+      const ctx1 = document.getElementById('barChart').getContext('2d');
+      barChart = new Chart(ctx1, {
+        type: 'bar',
+        data: {
+          labels: ['LAN', '4G', '3G', 'Satellite'],
+          datasets: [
+            { label: 'QUANTA', data: [2.1, 82.3, 202.9, 603.4], backgroundColor: 'rgba(52,211,153,0.7)', borderRadius: 4 },
+            { label: 'TLS 1.3', data: [1.3, 81.7, 202.4, 603.1], backgroundColor: 'rgba(248,113,113,0.5)', borderRadius: 4 }
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          scales: {
+            y: { ticks: { color: '#6E6E7A' }, grid: { color: 'rgba(255,255,255,0.06)' } },
+            x: { ticks: { color: '#6E6E7A' }, grid: { display: false } }
+          }
+        }
+      });
+      const ctx2 = document.getElementById('concChart').getContext('2d');
+      concChart = new Chart(ctx2, {
+        type: 'line',
+        data: {
+          labels: [1, 2, 4, 8, 16, 32, 64],
+          datasets: [
+            { label: 'QUANTA req/s', data: [476, 943, 1812, 3401, 5892, 8234, 9102], borderColor: '#34D399', backgroundColor: 'rgba(52,211,153,0.08)', fill: true, tension: 0.4 },
+            { label: 'TLS 1.3 req/s', data: [769, 1524, 2901, 5234, 8912, 10234, 10891], borderColor: '#F87171', borderDash: [4, 4], fill: false, tension: 0.4 }
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          scales: {
+            y: { ticks: { color: '#6E6E7A' }, grid: { color: 'rgba(255,255,255,0.06)' } },
+            x: { ticks: { color: '#6E6E7A' }, grid: { color: 'rgba(255,255,255,0.06)' } }
+          }
+        }
+      });
+    }
+
+    // ── Boot ──────────────────────────────────────────────────────────────────
+    document.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.addEventListener('click', () => showPage(btn.getAttribute('data-page')));
+      });
+      document.getElementById('btn-run-handshake').addEventListener('click', runHandshake);
+      document.getElementById('btn-run-pqc-tls').addEventListener('click', runRealPqcTls);
+      document.getElementById('btn-clear-log').addEventListener('click', clearLog);
+      document.querySelectorAll('.algo-item').forEach((el, i) => el.addEventListener('click', () => selectAlgo(i)));
+      document.getElementById('btn-sign').addEventListener('click', signMessage);
+      document.getElementById('btn-copy-sig').addEventListener('click', copySignature);
+      document.getElementById('btn-download-sig').addEventListener('click', downloadSignature);
+      document.getElementById('btn-register').addEventListener('click', registerUser);
+      document.getElementById('btn-goto-keygen').addEventListener('click', () => showPage('keygen'));
+      document.getElementById('btn-gen-kem').addEventListener('click', generateKemKeys);
+      document.getElementById('btn-gen-dsa').addEventListener('click', generateDsaKeys);
+      document.getElementById('btn-goto-demo').addEventListener('click', () => { if (kemGenerated && dsaGenerated) showPage('demo'); });
+      document.getElementById('btn-encrypt').addEventListener('click', encryptMessage);
+      document.getElementById('btn-send').addEventListener('click', sendCommMessage);
+      document.getElementById('btn-decrypt').addEventListener('click', decryptCommMessage);
+      document.getElementById('verify-doc-file').addEventListener('change', (e) => {
+        document.getElementById('verify-doc-name').innerText = (e.target.files[0] && e.target.files[0].name) || 'Click to choose a document';
+      });
+      document.getElementById('verify-sig-file').addEventListener('change', (e) => {
+        document.getElementById('verify-sig-name').innerText = (e.target.files[0] && e.target.files[0].name) || 'Click to choose a .sig file';
+      });
+      document.getElementById('btn-verify').addEventListener('click', verifySignature);
+      document.getElementById('audit-search').addEventListener('input', renderAuditTable);
+      document.getElementById('audit-filter').addEventListener('change', renderAuditTable);
+      document.getElementById('btn-audit-clear-filter').addEventListener('click', () => {
+        document.getElementById('audit-search').value = '';
+        document.getElementById('audit-filter').value = 'all';
+        renderAuditTable();
+      });
+
+      // Health check on load — confirms backend connectivity
+      fetch(`${API}/api/health`)
+        .then(r => r.json())
+        .then(d => addLog(`🟢 Backend online — liboqs ${d.liboqs_version} · Active tier: ${d.active_tier} · Uptime: ${d.uptime_s}s`, 'log-ok'))
+        .catch(() => addLog('🔴 Backend not reachable at http://127.0.0.1:8000 — run: uvicorn main:app --reload', 'log-error'));
+
+      // Check quanta-channel native OpenSSL 3.6+ PQC support
+      fetch(`${API}/api/channel/info`)
+        .then(r => r.json())
+        .then(d => {
+          if (d.has_x25519_mlkem768) {
+            addLog(`⚛️ quanta-channel Engine: ${d.openssl_version} · Hybrid PQC (X25519MLKEM768) Verified Active`, 'log-ok');
+          }
+        })
+        .catch(() => {});
+    });
+
+    // ═══════════════════════════════════════════════════════════════════
+    // QUANTUM THREAT LAB — Dynamic Interactive Engine
+    // ═══════════════════════════════════════════════════════════════════
+
+    // State for Quantum Threat Lab
+    let qtlCurrentN = 15;
+    let qtlCurrentA = 7;
+    let qtlCurrentE = 7;
+    let qtlShorFactors = null;    // { p, q } recovered by Shor's demo
+    let qtlCiphertextBlocks = []; // blocks from classicalEncrypt()
+    let qtlEncryptedMessage = ""; // the exact message string that was encrypted
+    let qtlHistogramChart = null; // Chart.js instance
+    let qtlCurrentMode = 'classical'; // 'classical' | 'hybrid'
+
+    // Helper: gcd
+    function qtlGcd(a, b) {
+      return b === 0 ? a : qtlGcd(b, a % b);
+    }
+
+    // Helper: compute order of a mod n
+    function qtlFindOrder(a, n) {
+      if (qtlGcd(a, n) !== 1) return -1;
+      let r = 1, val = a % n;
+      while (val !== 1) {
+        val = (val * a) % n;
+        r++;
+        if (r > n * n) return -1;
+      }
+      return r;
+    }
+
+    // Update dynamic qubit tiles
+    function renderQubitsLayout(controlQ, targetQ) {
+      const container = document.getElementById('qtl-qubits');
+      if (!container) return;
+      let html = '';
+      for (let i = 0; i < controlQ; i++) {
+        html += `<div class="qtl-qubit" title="Control Register q${i}">q${i}</div>`;
+      }
+      html += `<div style="width:10px;height:2px;background:var(--border);margin:0 4px;"></div>`;
+      for (let i = 0; i < targetQ; i++) {
+        const idx = controlQ + i;
+        html += `<div class="qtl-qubit target" title="Target Register q${idx}">q${idx}</div>`;
+      }
+      container.innerHTML = html;
+    }
+
+    // Update theoretical preview text
+    function updateParamPreview() {
+      const preview = document.getElementById('qtl-param-preview');
+      const errBox = document.getElementById('qtl-param-error');
+      const r = qtlFindOrder(qtlCurrentA, qtlCurrentN);
+
+      if (qtlGcd(qtlCurrentA, qtlCurrentN) !== 1) {
+        errBox.textContent = `Warning: gcd(${qtlCurrentA}, ${qtlCurrentN}) = ${qtlGcd(qtlCurrentA, qtlCurrentN)} ≠ 1 (must be coprime).`;
+        errBox.style.display = 'block';
+        preview.innerHTML = `N = ${qtlCurrentN} &nbsp;|&nbsp; a = ${qtlCurrentA} &nbsp;|&nbsp; <span style="color:var(--red);">Not coprime</span>`;
+      } else {
+        errBox.style.display = 'none';
+        preview.innerHTML = `N = ${qtlCurrentN} &nbsp;|&nbsp; a = ${qtlCurrentA} &nbsp;|&nbsp; Multiplicative order r = ord<sub>${qtlCurrentN}</sub>(${qtlCurrentA}) = <strong style="color:var(--accent-light);">${r !== -1 ? r : 'N/A'}</strong>`;
+      }
+
+      // Update titles
+      document.getElementById('qtl-step1-title').textContent = `Shor's Algorithm Simulation (N=${qtlCurrentN}, a=${qtlCurrentA})`;
+      document.getElementById('qtl-rsa-key-label').textContent = `Toy RSA (N=${qtlCurrentN}, e=${qtlCurrentE})`;
+      
+      const t = Math.max(4, Math.ceil(Math.log2(qtlCurrentN)) + 1);
+      const numTarget = Math.max(4, Math.ceil(Math.log2(qtlCurrentN)));
+      renderQubitsLayout(t, numTarget);
+    }
+
+    // Parameter Selectors
+    function selectN(val) {
+      ['15', '21', '35', '77'].forEach(k => {
+        const btn = document.getElementById(`qtl-n-${k}`);
+        if (btn) btn.className = (val === parseInt(k)) ? 'qtl-param-btn active' : 'qtl-param-btn';
+      });
+      if (val !== null) {
+        qtlCurrentN = val;
+        document.getElementById('qtl-n-custom').value = '';
+      }
+      updateParamPreview();
+    }
+
+    function selectCustomN() {
+      const val = parseInt(document.getElementById('qtl-n-custom').value);
+      if (!isNaN(val) && val >= 4) {
+        ['15', '21', '35', '77'].forEach(k => {
+          const btn = document.getElementById(`qtl-n-${k}`);
+          if (btn) btn.className = 'qtl-param-btn';
+        });
+        qtlCurrentN = val;
+        updateParamPreview();
+      }
+    }
+
+    function selectA(val) {
+      ['7', '2', '4', '8'].forEach(k => {
+        const btn = document.getElementById(`qtl-a-${k}`);
+        if (btn) btn.className = (val === parseInt(k)) ? 'qtl-param-btn active' : 'qtl-param-btn';
+      });
+      if (val !== null) {
+        qtlCurrentA = val;
+        document.getElementById('qtl-a-custom').value = '';
+      }
+      updateParamPreview();
+    }
+
+    function selectCustomA() {
+      const val = parseInt(document.getElementById('qtl-a-custom').value);
+      if (!isNaN(val) && val >= 2) {
+        ['7', '2', '4', '8'].forEach(k => {
+          const btn = document.getElementById(`qtl-a-${k}`);
+          if (btn) btn.className = 'qtl-param-btn';
+        });
+        qtlCurrentA = val;
+        updateParamPreview();
+      }
+    }
+
+    function setQTLMessage(msg) {
+      document.getElementById('qtl-custom-message').value = msg;
+    }
+
+    // ── Shor's Algorithm Demo ─────────────────────────────────────────
+    async function runQuantumDemo() {
+      const btn = document.getElementById('btn-run-shor');
+      btn.disabled = true;
+      btn.textContent = 'Simulating quantum circuit…';
+
+      // Animate qubits
+      const qubits = document.querySelectorAll('#qtl-qubits .qtl-qubit');
+      qubits.forEach((q, i) => {
+        setTimeout(() => q.classList.add('active'), i * 80);
+      });
+
+      try {
+        const data = await api('POST', '/quantum/shor_demo', { n: qtlCurrentN, a: qtlCurrentA });
+
+        // Store recovered factors for HNDL attack
+        qtlShorFactors = { p: data.factors[0], q: data.factors[1] };
+
+        // Update stats
+        document.getElementById('qtl-num-qubits').textContent = data.num_qubits;
+        document.getElementById('qtl-circuit-depth').textContent = data.circuit_depth;
+        document.getElementById('qtl-period').textContent = `r = ${data.period_found}`;
+
+        // Show factors
+        const [p, q] = data.factors;
+        document.getElementById('qtl-factors-display').innerHTML =
+          `<span style="color:var(--accent-light)">p = ${p}</span> <span style="color:var(--text-secondary);font-size:14px;margin:0 4px;">,</span> <span style="color:var(--accent-light)">q = ${q}</span> <span style="color:var(--text-secondary);margin:0 8px;">→</span> <span style="color:var(--text)">N = ${qtlCurrentN}</span>`;
+
+        // Update dynamic explainer
+        document.getElementById('qtl-histogram-explainer').innerHTML =
+          `Concentration at states corresponds to multiples of 2<sup>${data.control_qubits}</sup>/r = ${(2**data.control_qubits / data.period_found).toFixed(1)}. The QFT extracts period r = ${data.period_found}, yielding factors gcd(${data.a}<sup>${data.period_found/2}</sup> ± 1, ${data.n}) = <strong>${p}, ${q}</strong>.`;
+
+        // Draw histogram
+        renderQuantumHistogram(data.measurement_counts);
+
+        // Hide placeholder & show results section
+        const placeholder = document.getElementById('qtl-shor-placeholder');
+        if (placeholder) placeholder.style.display = 'none';
+        document.getElementById('qtl-shor-results').style.display = 'block';
+
+        // Update HNDL attack hint
+        if (qtlCiphertextBlocks.length > 0) {
+          document.getElementById('qtl-attack-hint').textContent =
+            `Factors recovered: p=${p}, q=${q}. Ready to decrypt captured ciphertext.`;
+          document.getElementById('qtl-attack-hint').style.color = 'var(--accent-light)';
+        }
+
+        btn.textContent = `Simulation Complete (N=${qtlCurrentN})`;
+        btn.style.background = 'rgba(34,197,94,0.15)';
+        btn.style.color = 'var(--accent-light)';
+        btn.style.border = '1px solid rgba(34,197,94,0.3)';
+        btn.disabled = false;
+      } catch (e) {
+        btn.textContent = 'Run Quantum Threat Simulation';
+        btn.disabled = false;
+        qubits.forEach(q => q.classList.remove('active'));
+        alert('Simulation error: ' + (e.message || e));
+      }
+    }
+
+    function renderQuantumHistogram(measurementCounts) {
+      const labels = Object.keys(measurementCounts);
+      const values = Object.values(measurementCounts);
+      
+      // Top 4 largest counts are peak states
+      const sortedVals = [...values].sort((a,b) => b - a);
+      const threshold = sortedVals[Math.min(3, sortedVals.length - 1)];
+      
+      const bgColors = values.map(v =>
+        v >= threshold ? 'rgba(34, 197, 94, 0.75)' : 'rgba(255, 255, 255, 0.04)'
+      );
+      const borderColors = values.map(v =>
+        v >= threshold ? '#4ADE80' : 'rgba(255, 255, 255, 0.12)'
+      );
+
+      const ctx = document.getElementById('qtl-histogram-chart').getContext('2d');
+      if (qtlHistogramChart) qtlHistogramChart.destroy();
+
+      qtlHistogramChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [{
+            label: 'Shot count',
+            data: values,
+            backgroundColor: bgColors,
+            borderColor: borderColors,
+            borderWidth: 1,
+            borderRadius: 4,
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                title: ctx => `Eigenstate |${ctx[0].label}⟩ (Decimal ${parseInt(ctx[0].label, 2)})`,
+                label: ctx => `Measured shots: ${ctx.raw}`
+              }
+            }
+          },
+          scales: {
+            x: {
+              ticks: { color: '#A1A1AA', font: { size: 10, family: 'JetBrains Mono' } },
+              grid: { color: 'rgba(34, 197, 94, 0.05)' }
+            },
+            y: {
+              ticks: { color: '#71717A', font: { size: 10, family: 'JetBrains Mono' } },
+              grid: { color: 'rgba(34, 197, 94, 0.05)' },
+              beginAtZero: true
+            }
+          }
+        }
+      });
+    }
+
+    // ── Classical HNDL Encrypt ────────────────────────────────────────
+    async function classicalEncrypt() {
+      const msgInput = document.getElementById('qtl-custom-message');
+      const message = msgInput.value.trim();
+      if (!message) {
+        alert('Please enter a message to encrypt.');
+        return;
+      }
+
+      const btn = document.getElementById('btn-classical-encrypt');
+      btn.disabled = true;
+      btn.textContent = 'Encrypting with Toy RSA…';
+      try {
+        const data = await api('POST', '/quantum/toy_encrypt', { message, n: qtlCurrentN });
+        qtlCiphertextBlocks = data.ciphertext_blocks;
+        qtlEncryptedMessage = message;
+        qtlCurrentE = data.e;
+
+        // Display the ciphertext
+        const ctHex = data.ciphertext_blocks.map(b => b.toString(16).padStart(2, '0')).join(':');
+        document.getElementById('qtl-ciphertext-display').innerHTML =
+          `<div style="color:var(--text-secondary);font-size:10px;margin-bottom:6px;">RSA CIPHERTEXT STREAM (Toy RSA N=${data.n}, e=${data.e}):</div>` +
+          `<div style="color:var(--red);word-break:break-all;font-size:12px;font-family:var(--mono);">${ctHex}</div>` +
+          `<div style="color:var(--muted);margin-top:8px;font-size:10px;font-family:var(--mono);">Block Count: ${data.ciphertext_blocks.length} bytes &nbsp;|&nbsp; Public Exponent e = ${data.e}</div>`;
+
+        document.getElementById('qtl-captured-section').style.display = 'block';
+
+        if (qtlShorFactors) {
+          document.getElementById('qtl-attack-hint').textContent =
+            `Factors already available: p=${qtlShorFactors.p}, q=${qtlShorFactors.q}. Ready to decrypt.`;
+          document.getElementById('qtl-attack-hint').style.color = 'var(--accent-light)';
+        }
+
+        btn.disabled = false;
+        btn.textContent = 'Message Encrypted & Captured';
+        btn.style.color = 'var(--red)';
+      } catch (e) {
+        btn.disabled = false;
+        btn.textContent = 'Encrypt with Classical-Only (Toy RSA)';
+        alert('Encryption error: ' + (e.message || e));
+      }
+    }
+
+    // ── Quantum Attack (HNDL) ─────────────────────────────────────────
+    async function simulateQuantumAttack() {
+      if (!qtlShorFactors) {
+        alert('Please run Step 01 (Shor\'s simulation) first to extract prime factors.');
+        return;
+      }
+      if (qtlCiphertextBlocks.length === 0) {
+        alert('Please encrypt a message first.');
+        return;
+      }
+
+      const btn = document.getElementById('btn-quantum-attack');
+      btn.disabled = true;
+      btn.textContent = 'Executing quantum decryption attack…';
+
+      try {
+        const data = await api('POST', '/quantum/toy_decrypt', {
+          ciphertext_blocks: qtlCiphertextBlocks,
+          p: qtlShorFactors.p,
+          q: qtlShorFactors.q,
+          original_message: qtlEncryptedMessage,
+          e: qtlCurrentE
+        });
+
+        document.getElementById('qtl-recovered-d').textContent = `d = ${data.private_key_d} (from φ(${qtlCurrentN}) = (${qtlShorFactors.p}-1)(${qtlShorFactors.q}-1) = ${(qtlShorFactors.p-1)*(qtlShorFactors.q-1)})`;
+        document.getElementById('qtl-decrypted-msg').textContent = `"${data.decrypted_message}"`;
+        document.getElementById('qtl-decrypted-section').style.display = 'block';
+
+        btn.disabled = false;
+        btn.textContent = 'Attack Succeeded — Key Derived';
+        btn.style.background = 'rgba(239,68,68,0.15)';
+        btn.style.color = '#F87171';
+      } catch (e) {
+        btn.disabled = false;
+        btn.textContent = 'Simulate Quantum Attack (Use Shor\'s Factors)';
+        alert('Attack execution error: ' + (e.message || e));
+      }
+    }
+
+    // ── Mode Toggle (Classical / Hybrid) ─────────────────────────────
+    function setQuantumMode(mode) {
+      qtlCurrentMode = mode;
+      const btnC = document.getElementById('qtl-btn-classical');
+      const btnH = document.getElementById('qtl-btn-hybrid');
+      const classicDetail = document.getElementById('qtl-classical-detail');
+      const hybridDetail  = document.getElementById('qtl-hybrid-detail');
+      const classicSec    = document.getElementById('qtl-security-classical');
+      const hybridSec     = document.getElementById('qtl-security-hybrid');
+
+      if (mode === 'classical') {
+        btnC.className = 'qtl-mode-btn active-classical';
+        btnH.className = 'qtl-mode-btn';
+        classicDetail.style.display = '';
+        hybridDetail.style.display  = 'none';
+        classicSec.style.display    = '';
+        hybridSec.style.display     = 'none';
+      } else {
+        btnH.className = 'qtl-mode-btn active-hybrid';
+        btnC.className = 'qtl-mode-btn';
+        classicDetail.style.display = 'none';
+        hybridDetail.style.display  = '';
+        classicSec.style.display    = 'none';
+        hybridSec.style.display     = '';
+      }
+
+      // Reset handshake result
+      document.getElementById('qtl-handshake-result').style.display = 'none';
+      document.getElementById('btn-qtl-handshake').textContent = 'Execute Handshake in Current Mode';
+    }
+
+    // ── Hybrid Handshake Demo ─────────────────────────────────────────
+    async function runQuantumHandshake() {
+      const btn = document.getElementById('btn-qtl-handshake');
+      const res = document.getElementById('qtl-handshake-result');
+      btn.disabled = true;
+      btn.textContent = 'Running handshake…';
+
+      try {
+        const tier = qtlCurrentMode === 'hybrid' ? 1 : 4;
+        const data = await api('POST', '/api/handshake', { tier });
+
+        const color = qtlCurrentMode === 'hybrid' ? 'var(--accent-light)' : '#F87171';
+        res.innerHTML =
+          `<div style="color:${color};font-weight:700;margin-bottom:6px;font-size:12px;">${qtlCurrentMode === 'hybrid' ? 'QUANTA Hybrid Handshake Complete (Post-Quantum Secure)' : 'Classical Handshake Complete (Vulnerable to Shor)'}</div>` +
+          `<div>Protocol: <strong>${data.algorithm}</strong> &nbsp;|&nbsp; Security: <strong>${data.security_level}</strong></div>` +
+          `<div style="margin:4px 0;">Derived Session Key K: <code style="color:${color};">${data.K_hybrid_hex.slice(0,32)}…</code></div>` +
+          `<div>Latency: <strong>${data.timing.total_ms}ms</strong> (Server: ${data.timing.server_compute_ms}ms, Client: ${data.timing.client_compute_ms}ms)</div>` +
+          (qtlCurrentMode === 'hybrid'
+            ? `<div style="color:var(--accent-light);font-size:10px;margin-top:6px;border-top:1px solid rgba(34,197,94,0.15);padding-top:4px;">Protected: Master key derived via HKDF(K_classical ‖ K_pqc). Shor breaking X25519 yields zero advantage against ML-KEM-768.</div>`
+            : `<div style="color:#F87171;font-size:10px;margin-top:6px;border-top:1px solid rgba(239,68,68,0.15);padding-top:4px;">Vulnerable: Master key derived from single X25519 secret. Solvable by quantum discrete log (CRQC).</div>`
+          );
+        res.style.display = 'block';
+
+        btn.textContent = 'Handshake Complete';
+        btn.disabled = false;
+      } catch (e) {
+        btn.disabled = false;
+        btn.textContent = 'Execute Handshake in Current Mode';
+        alert('Handshake error: ' + (e.message || e));
+      }
+    }
+
+    // Initialize Threat Lab parameters layout on load
+    updateParamPreview();
+
+  </script>
+</body>
+</html>

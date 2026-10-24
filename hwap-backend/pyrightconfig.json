@@ -1,0 +1,19 @@
+{
+    "include": [
+        "."
+    ],
+    "exclude": [
+        "venv",
+        ".pytest_cache",
+        "__pycache__"
+    ],
+    "venvPath": ".",
+    "venv": "venv",
+    "pythonVersion": "3.13",
+    "typeCheckingMode": "off",
+    "useLibraryCodeForTypes": true,
+    "reportMissingImports": false,
+    "reportMissingModuleSource": false,
+    "reportGeneralTypeIssues": "none",
+    "reportAttributeAccessIssue": "none"
+}

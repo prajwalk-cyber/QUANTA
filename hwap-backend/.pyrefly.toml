@@ -1,0 +1,4 @@
+# Pyrefly configuration — use the local venv for type resolution
+python_interpreter = "./venv/bin/python"
+project_includes = ["."]
+project_excludes = ["venv/**", ".pytest_cache/**", "**/__pycache__/**"]

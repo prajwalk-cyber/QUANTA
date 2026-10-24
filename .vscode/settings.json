@@ -1,0 +1,10 @@
+{
+    "python.defaultInterpreterPath": "${workspaceFolder}/hwap-backend/venv/bin/python",
+    "python.analysis.extraPaths": [
+        "${workspaceFolder}/hwap-backend"
+    ],
+    "python.analysis.venvPath": "${workspaceFolder}/hwap-backend",
+    "python.analysis.venv": "venv",
+    "pyrefly.pythonInterpreter": "${workspaceFolder}/hwap-backend/venv/bin/python",
+    "python.analysis.typeCheckingMode": "off"
+}

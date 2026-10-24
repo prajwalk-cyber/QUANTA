@@ -1,0 +1,328 @@
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{url}
+\usepackage{microtype}
+
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+
+\begin{document}
+
+\title{QUANTA: A Policy-Governed Secure-Channel Architecture for Hybrid Post-Quantum TLS 1.3\\
+}
+
+\author{\IEEEauthorblockN{Prajwal K}
+\IEEEauthorblockA{\textit{Department of Cybersecurity \& Systems Architecture} \\
+\textit{Independent Research Initiative}\\
+Bengaluru, India \\
+prajjuk.in.com@gmail.com}
+}
+
+\maketitle
+
+\begin{abstract}
+The transition to post-quantum cryptography is critically motivated by the Harvest-Now-Decrypt-Later (HNDL) adversary model, wherein adversaries intercept and record encrypted network traffic today to decrypt it once cryptanalytically relevant quantum computers (CRQCs) become operational. While standardized hybrid key-encapsulation mechanisms, such as X25519MLKEM768, provide dual-combiner security under both classical discrete logarithm and module-lattice hardness assumptions, application endpoints frequently face structural engineering hazards: reliance on unverified intermediary transport proxies, susceptibility to silent protocol downgrade, lack of runtime cryptographic policy enforcement, and exposure to allocation-based denial-of-service under unbounded framing. This paper introduces QUANTA, a policy-governed secure-channel architecture and reusable systems library (\texttt{quanta-channel}) that operates directly over standard TLS 1.3 (RFC 8446) with RFC 10024 hybrid key agreement. QUANTA guarantees: (i) native runtime state introspection via low-level OpenSSL 3.6+ C-bindings to enforce strict fail-closed downgrade prevention prior to application data transmission; (ii) bounded binary message framing (\texttt{QNT1}) capped at 16~MiB to contain memory exhaustion attacks on constrained endpoints; and (iii) an in-memory zero-secret-disclosure telemetry model. Empirical evaluation across 50 multi-process TLS 1.3 handshakes confirms that QUANTA achieves a median handshake latency of 0.655~ms compared to 0.510~ms for classical X25519 (+145~$\mu$s CPU compute delta, +28.4\%), completing within the exact same single round-trip (1-RTT) without network penalty under standard TCP initial congestion windows.
+\end{abstract}
+
+\begin{IEEEkeywords}
+Post-quantum cryptography, hybrid key exchange, TLS 1.3, ML-KEM-768, network security, cryptographic policy, secure channels.
+\end{IEEEkeywords}
+
+\section{Introduction}
+Shor's algorithm \cite{shor1997polynomial} demonstrates that polynomial-time quantum algorithms running on large-scale fault-tolerant quantum computers will completely compromise existing public-key cryptosystems based on integer factorization (RSA) and discrete logarithms over finite fields and elliptic curves (ECDH, ECDSA). In response, the National Institute of Standards and Technology (NIST) finalized the initial Post-Quantum Cryptography (PQC) standards in August 2024, designating FIPS 203 (ML-KEM) \cite{nist_fips203} for key encapsulation and FIPS 204 (ML-DSA) \cite{nist_fips204} for digital signatures.
+
+For network protocols, the most urgent quantum vulnerability is the \textit{Harvest-Now-Decrypt-Later} (HNDL) paradigm. An adversary intercepting long-lived confidential communications (e.g., medical records, critical infrastructure controls, diplomatic traffic) can archive ciphertext transcripts today and retroactively recover session keys once a Cryptanalytically Relevant Quantum Computer (CRQC) is deployed. Conversely, digital signature forgery requires active real-time quantum execution, rendering key exchange the immediate priority for confidential channels.
+
+To balance post-quantum defense against potential undiscovered vulnerabilities in new lattice-based hardness assumptions, the Internet Engineering Task Force (IETF) standardized hybrid key establishment in TLS 1.3 via RFC 9954 \cite{rfc9954} and RFC 10024 \cite{rfc10024}. The hybrid combiner (\texttt{X25519MLKEM768}) concatenates the shared secret of classical Curve25519 ECDH with the post-quantum secret of ML-KEM-768 inside the standard TLS 1.3 HKDF extract-and-expand schedule \cite{rfc8446}.
+
+Despite cryptographic standardization, real-world systems deployment faces significant operational and engineering challenges:
+\begin{enumerate}
+    \item \textbf{Silent Cryptographic Downgrade:} Many TLS libraries permit automatic negotiation fallback to classical curves (e.g., \texttt{secp256r1} or plain \texttt{x25519}) if peer capabilities mismatch or middleboxes interfere, leaving endpoints unaware of security erosion.
+    \item \textbf{Lack of Application-Layer Verification:} Application logic typically cannot inspect which named group was actually negotiated at the underlying TLS C-stack level without custom runtime bindings.
+    \item \textbf{Denial-of-Service Framing Exposure:} Naive application framing over TLS streams can expose constrained servers to memory exhaustion when receiving multi-megabyte payloads.
+    \item \textbf{Secret Leakage via Telemetry:} Educational and debugging dashboards routinely leak intermediate session keys or private key handles in API telemetry.
+\end{enumerate}
+
+\subsection{Research Question}
+This paper addresses the following research question:
+\textit{How can application endpoints reliably enforce post-quantum hybrid key exchange over standardized TLS 1.3 without trusting intermediary proxies, preventing silent cryptographic downgrade, and containing denial-of-service exposure under bounded application framing?}
+
+\subsection{Contributions}
+The primary contributions of this paper are:
+\begin{itemize}
+    \item \textbf{Policy-Governed Architecture:} We present QUANTA and its core library (\texttt{quanta-channel}), formalizing a layered secure-channel architecture operating over standardized TLS 1.3.
+    \item \textbf{Fail-Closed Runtime State Introspection:} We develop a direct C-binding mechanism to OpenSSL 3.6+ using \texttt{SSL\_CTX\_ctrl} and \texttt{SSL\_get0\_group\_name} that introspects the active socket connection and enforces a strict fail-closed downgrade policy before application data is accepted.
+    \item \textbf{Bounded Binary Framing Protocol (\texttt{QNT1}):} We specify and implement an 11-byte length-prefixed binary framing protocol with an enforced 16~MiB payload boundary and integrated keepalive control frames.
+    \item \textbf{Empirical Evaluation and 1-RTT Invariance:} We provide empirical measurements across 50 multi-process TLS 1.3 handshakes, proving that hybrid \texttt{X25519MLKEM768} adds only 145~$\mu$s of median compute latency over classical \texttt{X25519} while completing in the exact same 1-RTT network round trip.
+\end{itemize}
+
+\section{Background and Related Work}
+
+\subsection{TLS 1.3 Key Schedule and RFC 10024 Hybrid Exchange}
+The TLS 1.3 handshake \cite{rfc8446} establishes confidentiality and integrity in a single round trip (1-RTT). In standard TLS 1.3, the client transmits a \texttt{ClientHello} message containing a \texttt{supported\_groups} extension and one or more ephemeral \texttt{KeyShare} entries.
+
+Under RFC 10024 \cite{rfc10024}, the named group \texttt{X25519MLKEM768} (codepoint \texttt{0x11ec}) combines:
+\begin{itemize}
+    \item A classical Curve25519 ephemeral public key (32 bytes).
+    \item An ML-KEM-768 encapsulation key (1,184 bytes).
+\end{itemize}
+The total client key share is $32 + 1184 = 1216$ bytes. The server responds in its \texttt{ServerHello} with:
+\begin{itemize}
+    \item A classical Curve25519 ephemeral public key (32 bytes).
+    \item An ML-KEM-768 ciphertext (1,088 bytes).
+\end{itemize}
+Both endpoints derive the combined pre-master secret:
+\begin{equation}
+    K_{\text{combined}} = K_{\text{classical}} \mathbin{\Vert} K_{\text{pqc}}
+\end{equation}
+This combined secret is fed directly into the TLS 1.3 HKDF-Extract stage:
+\begin{equation}
+    \text{EarlySecret} = \text{HKDF-Extract}(0, 0)
+\end{equation}
+\begin{equation}
+    \text{HandshakeSecret} = \text{HKDF-Extract}(\text{Derive-Secret}(\dots), K_{\text{combined}})
+\end{equation}
+As proven by Stebila et al. \cite{rfc9954}, the hybrid construction satisfies IND-CCA2 security as long as at least one of the constituent key establishment mechanisms remains secure.
+
+\subsection{Comparison with Related Systems}
+Table~\ref{tab:comparison} contrasts QUANTA with prominent related implementations in the literature and industry.
+
+\begin{table*}[t]
+\caption{Architectural Comparison of Secure-Channel Systems}
+\label{tab:comparison}
+\centering
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+\textbf{System / Protocol} & \textbf{Standard Basis} & \textbf{Key Exchange} & \textbf{Authentication} & \textbf{Policy Enforcement} & \textbf{Framing Bounds} \\
+\midrule
+BoringSSL / Chromium \cite{paquin2020benchmarking} & TLS 1.3 / RFC 10024 & X25519MLKEM768 & Classical X.509 & Browser-internal & Browser TLS stream \\
+liboqs-python (OQS) \cite{paquin2020benchmarking} & Experimental C & KEM primitive only & DSA primitive only & None (Raw crypto API) & Unframed raw buffers \\
+Rosenpass \cite{alwen2021post} & Custom (Noise-like) & Classic McEliece / Kyber & Pre-shared keys & WireGuard integration & Bounded UDP packets \\
+Signal PQXDH \cite{alwen2021post} & Asynchronous Ratchet & X3DH + Kyber-1024 & Ed25519 identity & App-embedded ratchet & Application messages \\
+\textbf{QUANTA (\texttt{quanta-channel})} & \textbf{TLS 1.3 (RFC 8446)} & \textbf{X25519MLKEM768} & \textbf{X.509 Strict PKI} & \textbf{Fail-Closed C-Introspection} & \textbf{QNT1 (16 MiB Bound)} \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+Unlike raw cryptographic wrappers (e.g., \texttt{liboqs-python}) that leave session lifecycle and channel security to developers, and unlike custom handshake protocols (e.g., Rosenpass) that require novel protocol audits, QUANTA builds strictly upon standardized TLS 1.3 while solving application-layer governance and downgrade vulnerability.
+
+\section{Problem Statement and Threat Model}
+
+\subsection{System Model}
+QUANTA considers two network endpoints: an initiating client $C$ and an accepting server $S$, communicating over an untrusted IP network. Both endpoints possess standard CPU capabilities and maintained TLS implementations (OpenSSL 3.6+). $S$ is provisioned with an X.509 server certificate issued by a trusted Root Certificate Authority (CA).
+
+\subsection{Adversary Capabilities and Threat Model}
+We evaluate QUANTA against a four-tier adversary model incorporating STRIDE threat modeling:
+\begin{enumerate}
+    \item \textbf{Passive Eavesdropper (Eve):} Can intercept, record, and archive all network traffic across the public internet. Eve possesses arbitrary storage capacity and anticipates future access to a Cryptanalytically Relevant Quantum Computer (CRQC) capable of executing Shor's algorithm ($HNDL$ model).
+    \item \textbf{Active Network Attacker (Mallory):} Can inject, drop, delay, replay, and alter packets in real time. Mallory attempts protocol downgrade attacks (forcing endpoints to negotiate classical curves like \texttt{X25519} or \texttt{secp256r1}) and impersonation attacks.
+    \item \textbf{Malicious Peer / Resource Attacker (Trudy):} Can establish legitimate TLS handshakes but sends malformed frame headers, oversized payload streams, or rapid connection churn to induce denial-of-service (DoS) via memory exhaustion.
+    \item \textbf{Host-Environment Observer (Sybil):} Can monitor application-layer telemetry, log outputs, and HTTP debugging responses to extract cryptographic secrets or key handles.
+\end{enumerate}
+
+\subsection{Security Objectives and Exclusions}
+\begin{itemize}
+    \item \textbf{Confidentiality Invariant:} Session payload confidentiality must resist both classical polynomial-time adversaries and future CRQCs (IND-CCA2 security).
+    \item \textbf{Downgrade Resistance Invariant:} If the client or server policy specifies \texttt{STRICT\_HYBRID}, no connection negotiating a non-hybrid group shall ever transmit or receive application data.
+    \item \textbf{Peer Authentication Invariant:} All server certificates must be cryptographically validated against trusted roots with strict SAN/CN hostname verification.
+    \item \textbf{Memory Bounds Invariant:} No peer buffer allocation shall exceed 16~MiB under any framing condition.
+    \item \textbf{Zero Secret Disclosure:} Private keys, pre-master secrets, and traffic secrets must never be exposed in telemetry, logs, or external APIs.
+\end{itemize}
+\textit{Exclusions:} Physical side-channel attacks (DPA/EM) on endpoint hardware and full OS root compromise are out of scope.
+
+\section{Proposed QUANTA Architecture}
+
+\subsection{Layered Systems Architecture}
+QUANTA is structured into distinct, modular subsystems designed to separate core channel mechanics from application telemetry and demonstration logic:
+
+\begin{figure}[htbp]
+\centering
+\fbox{\parbox{0.95\columnwidth}{
+\vspace{2pt}
+\centering \textbf{QUANTA Systems Architecture}
+\vspace{4pt}
+\hrule
+\vspace{4pt}
+\textbf{Layer 4: Application \& Telemetry Layer}\\
+FastAPI Telemetry Bridge $\cdot$ Zero-Leakage Data Model $\cdot$ UI Dashboard\\
+\vspace{2pt}
+\hrule
+\vspace{2pt}
+\textbf{Layer 3: Framing Protocol (\texttt{QNT1})}\\
+11-Byte Header $\cdot$ 16 MiB Bound $\cdot$ Type Multiplexing (DATA/PING/PONG)\\
+\vspace{2pt}
+\hrule
+\vspace{2pt}
+\textbf{Layer 2: Policy Engine \& C-Introspection}\\
+\texttt{ChannelPolicy} $\cdot$ Fail-Closed Verification $\cdot$ \texttt{SSL\_get0\_group\_name}\\
+\vspace{2pt}
+\hrule
+\vspace{2pt}
+\textbf{Layer 1: Standard TLS 1.3 Transport}\\
+OpenSSL 3.6+ Engine $\cdot$ RFC 10024 (\texttt{X25519MLKEM768}) $\cdot$ Strict X.509 PKI\\
+\vspace{2pt}
+}}
+\caption{Layered architecture of the QUANTA secure-channel library.}
+\label{fig:arch}
+\end{figure}
+
+\subsection{Runtime C-Binding and Group Introspection}
+Standard high-level language runtimes (such as Python's standard \texttt{ssl} library) lack native programmatic APIs to enforce post-quantum named group restrictions or query the negotiated key-exchange group on established sockets.
+
+To resolve this limitation without patching or recompiling Python, \texttt{quanta-channel} implements a direct C-binding to \texttt{libssl.so.3} using \texttt{ctypes}:
+\begin{enumerate}
+    \item \textbf{Group Configuration:} During context initialization, \texttt{quanta-channel} extracts the native pointer \texttt{SSL\_CTX*} at offset 16 of \texttt{PySSLContext} and invokes:
+    \begin{equation}
+        \text{SSL\_CTX\_ctrl}(\text{ctx}, 92, 0, \text{"X25519MLKEM768"})
+    \end{equation}
+    where 92 represents \texttt{SSL\_CTRL\_SET\_GROUPS\_LIST}. If host OpenSSL does not support the named group, the call returns an error code, triggering an immediate \texttt{PQCConfigurationError} during startup.
+    \item \textbf{Active Group Introspection:} Immediately following handshake completion and prior to any frame parsing, \texttt{quanta-channel} extracts the active \texttt{SSL*} pointer from \texttt{PySSLObject} (offset 24) and calls:
+    \begin{equation}
+        g = \text{SSL\_get0\_group\_name}(\text{ssl})
+    \end{equation}
+    If $g \neq \text{"X25519MLKEM768"}$ under \texttt{STRICT\_HYBRID} policy, the socket is immediately closed and a \texttt{CryptographicDowngradeError} is raised.
+\end{enumerate}
+
+\subsection{Bounded Binary Application Framing Protocol (\texttt{QNT1})}
+Because TLS is an unstructured byte-stream protocol, application endpoints require message delineation. Naive unbounded length-prefixing exposes servers to integer-overflow or multi-gigabyte memory allocations.
+
+QUANTA defines the \texttt{QNT1} framing protocol:
+\begin{itemize}
+    \item \textbf{Header Structure (11 Bytes Total):}
+    \begin{itemize}
+        \item \texttt{Magic} (4 bytes): Fixed ASCII \texttt{b"QNT1"}.
+        \item \texttt{Frame Type} (1 byte): \texttt{0x01} (DATA), \texttt{0x02} (PING), \texttt{0x03} (PONG), \texttt{0x04} (CLOSE).
+        \item \texttt{Flags} (2 bytes): Reserved extension bits.
+        \item \texttt{Payload Length} (4 bytes): 32-bit big-endian unsigned integer ($0 \le L \le 16{,}777{,}216$).
+    \end{itemize}
+    \item \textbf{Memory Bound Enforcement:} If $L > 16\text{~MiB}$, the receiving endpoint drops the connection immediately without allocating memory, raising \texttt{OversizedFrameError}.
+    \item \textbf{Control Multiplexing:} \texttt{PING} frames trigger automatic symmetric \texttt{PONG} responses at the transport layer without waking application worker threads.
+\end{itemize}
+
+\subsection{Zero-Disclosure Telemetry Model}
+To provide operational observability without compromising cryptographic keys, \texttt{SafeTelemetry} collects only non-sensitive structural connection metadata:
+\begin{itemize}
+    \item Active TLS protocol version (e.g., \texttt{"TLSv1.3"}).
+    \item Negotiated key-exchange group (e.g., \texttt{"X25519MLKEM768"}).
+    \item Cipher suite (e.g., \texttt{"TLS\_AES\_256\_GCM\_SHA384"}).
+    \item Validated peer certificate subject common name and issuer.
+    \item Handshake latency in milliseconds.
+    \item Bounded counters for messages and bytes transmitted.
+\end{itemize}
+Private key components, ephemeral pre-master secrets, and TLS traffic keys never enter the telemetry model or heap-allocated telemetry dictionaries.
+
+\section{Security and Invariant Analysis}
+
+\subsection{Confidentiality and Dual-Combiner Security}
+Under RFC 10024 \cite{rfc10024}, confidentiality relies on the hardness of two independent mathematical problems:
+\begin{enumerate}
+    \item Computational Diffie-Hellman (CDH) over Curve25519.
+    \item Module Learning With Errors (M-LWE) over module lattices for ML-KEM-768 \cite{nist_fips203, bos2018crystals}.
+\end{enumerate}
+Because $K_{\text{combined}} = K_{\text{classical}} \mathbin{\Vert} K_{\text{pqc}}$ is processed by HKDF-Extract, recovering the TLS handshake traffic secret requires breaking \textit{both} mechanisms. If an adversary possesses a CRQC running Shor's algorithm, Curve25519 is compromised, but ML-KEM-768 remains secure under lattice shortest vector hardness. Conversely, if an unexpected classical algorithmic advance undermines ML-KEM-768, Curve25519 preserves 128-bit classical security against all existing supercomputing architectures.
+
+\subsection{Downgrade Resistance and MITM Analysis}
+Consider an active adversary (Mallory) intercepting the TLS 1.3 handshake. In standard TLS 1.3, client supported groups are included in \texttt{ClientHello}.
+If Mallory strips \texttt{X25519MLKEM768} from the key shares to force fallback to \texttt{X25519}, two defenses trigger:
+\begin{enumerate}
+    \item \textbf{Cryptographic Transcript Authentication:} TLS 1.3 authenticates the entire handshake transcript in the \texttt{CertificateVerify} and \texttt{Finished} messages using HMAC-SHA384. Any modification of \texttt{ClientHello} causes handshake verification failure at the server and client.
+    \item \textbf{QUANTA Policy Verification:} Even if a compromised server certificate or rogue middlebox cooperates in classical negotiation, QUANTA's active socket introspection executes post-handshake:
+    \begin{equation}
+        \text{PolicyMode.STRICT\_HYBRID} \implies g \in \{\text{"x25519mlkem768"}\}
+    \end{equation}
+    If $g = \text{"x25519"}$, QUANTA executes a hard fail-closed abort, zeroing buffers and closing the TCP connection. Application payloads are never decrypted or transmitted.
+\end{enumerate}
+
+\subsection{Authentication Guarantees and Current Scope}
+It is critical to distinguish key establishment from authentication. While QUANTA achieves post-quantum confidentiality through hybrid key exchange, authentication in the primary channel currently relies on standard X.509 PKI (ECDSA/RSA certificates).
+
+Consequently, an active real-time quantum adversary with a CRQC could theoretically forge classical X.509 server signatures during connection setup. However, for the realistic threat horizon of the next decade—where retroactive decryption of recorded traffic ($HNDL$) is the active attack vector—hybrid key exchange provides immediate, complete defense. Standalone FIPS 204 ML-DSA-65 signature authentication is implemented in the QUANTA repository as an independent demonstration module, with full PKI integration planned as future work (Section~\ref{sec:future}).
+
+\section{Implementation and Empirical Evaluation}
+
+\subsection{Experimental Setup and Testbed Environment}
+To ensure strict reproducibility, all benchmarks and multi-process integration tests were executed on the following standardized physical testbed:
+\begin{itemize}
+    \item \textbf{Processor:} AMD Ryzen 7 5800H @ 3.20~GHz (8 cores, 16 threads, 16~MB L3 cache).
+    \item \textbf{Memory:} 16~GB DDR4 @ 3200~MT/s.
+    \item \textbf{Operating System:} Linux 6.17.5-arch1-1 (x86\_64).
+    \item \textbf{Cryptographic Provider:} OpenSSL 3.6.5 (15 Jan 2026 release) with native FIPS 203 provider support enabled.
+    \item \textbf{Runtimes:} CPython 3.14.8 and CPython 3.12.15 isolated via \texttt{uv} virtual environments.
+\end{itemize}
+
+\subsection{Automated Integration Test Results}
+QUANTA was evaluated against two automated test suites:
+\begin{enumerate}
+    \item \textbf{quanta-channel Multi-Process Integration Suite:} 10 tests verifying independent OS processes across socket boundaries:
+    \begin{itemize}
+        \item Multi-process hybrid TLS 1.3 handshake (\texttt{PASSED}).
+        \item Strict hostname mismatch rejection (\texttt{PASSED}).
+        \item Untrusted root CA certificate rejection (\texttt{PASSED}).
+        \item Policy fail-closed downgrade rejection (\texttt{PASSED}).
+        \item Bounded framing encoding, truncation, and 16~MiB overflow rejection (\texttt{PASSED}).
+        \item Asynchronous \texttt{asyncio} full round-trip (\texttt{PASSED}).
+    \end{itemize}
+    All 10 tests passed in 1.86~seconds.
+    \item \textbf{hwap-backend API & Telemetry Suite:} 10 unit and endpoint tests verifying REST routes, zero secret leakage, and cryptographic telemetry bridges (\texttt{PASSED} in 0.54~seconds).
+\end{enumerate}
+
+\subsection{Handshake Latency Micro-benchmarking}
+We executed 50 consecutive handshakes comparing classical \texttt{X25519} against hybrid post-quantum \texttt{X25519MLKEM768} in independent multi-threaded worker configurations over local loopback sockets. Results are summarized in Table~\ref{tab:benchmarks}.
+
+\begin{table}[htbp]
+\caption{Handshake Latency Comparison (50 Independent Handshakes)}
+\label{tab:benchmarks}
+\centering
+\begin{tabular}{@{}lccc@{}}
+\toprule
+\textbf{Metric} & \textbf{Classical X25519} & \textbf{Hybrid X25519MLKEM768} & \textbf{Delta} \\
+\midrule
+Median Latency & \textbf{0.510 ms} & \textbf{0.655 ms} & \textbf{+0.145 ms} \\
+Minimum Latency & 0.443 ms & 0.589 ms & +0.146 ms \\
+Maximum Latency & 0.985 ms & 1.120 ms & +0.135 ms \\
+Mean Latency & 0.536 ms & 0.678 ms & +0.142 ms \\
+Standard Deviation & 0.088 ms & 0.094 ms & +0.006 ms \\
+Network Round Trips & \textbf{1-RTT} & \textbf{1-RTT} & \textbf{0 RTT} \\
+Total Key Shares & 32 bytes & 2,336 bytes & +2,304 bytes \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{1-RTT Zero-Network-Penalty Analysis}
+A critical concern in post-quantum protocol engineering is packet fragmentation. If public key shares exceed the Maximum Transmission Unit (MTU, typically 1,500 bytes on Ethernet), IP fragmentation or TCP packet splitting can introduce additional round trips.
+
+In QUANTA, the total key-exchange byte overhead of \texttt{X25519MLKEM768} is:
+\begin{equation}
+    \Delta B = 1184 \text{ (Client PQC Key)} + 1088 \text{ (Server PQC Ciphertext)} = 2304 \text{ bytes}
+\end{equation}
+Modern TCP implementations standardize an initial congestion window (initcwnd) of 10 MSS ($10 \times 1460 \approx 14.6\text{~KiB}$). Because $2.3\text{~KiB} \ll 14.6\text{~KiB}$, the entire TLS 1.3 hybrid handshake completes without TCP window stall in the \textbf{exact same single round trip (1-RTT)} as classical TLS. The total empirical performance penalty is solely the $\mathbf{145\text{~\mu s}}$ CPU processing delta required for lattice polynomial arithmetic.
+
+\section{Discussion, Operational Considerations, and Limitations}
+
+\subsection{Dependence on Underlying Cryptographic Provider}
+QUANTA relies on OpenSSL 3.6+ for native implementation of FIPS 203 polynomial arithmetic. While this design avoids unvetted custom cryptographic handshakes and leverages hardware-accelerated vector instructions (AVX2/NEON), it establishes a dependency on modern host library availability. On legacy operating systems with OpenSSL 1.1.1 or 3.0, post-quantum hybrid groups are unavailable, causing QUANTA's \texttt{STRICT\_HYBRID} policy to fail closed by design.
+
+\subsection{Authentication Migration Roadmap}
+While hybrid key exchange effectively defeats HNDL adversaries, full post-quantum resilience requires replacing classical X.509 certificates with post-quantum digital signatures (FIPS 204 ML-DSA-65 or FIPS 205 SLH-DSA). However, ML-DSA-65 public keys (1,952 bytes) and signatures (3,309 bytes) substantially expand certificate chain sizes (frequently exceeding 10~KiB for multi-tier chains). This size expansion risks exceeding initial congestion windows, inducing multi-RTT latency penalties on high-latency or packet-loss prone networks. Future engineering must address hybrid dual-certificate verification architectures.
+
+\subsection{Operational Agility and Cryptographic Governance}
+Cryptographic agility introduces operational risk: if systems permit too many fallback tiers, configuration complexity can inadvertently open downgrade vulnerabilities. QUANTA demonstrates that policy constraints should be codified in application software invariants rather than delegated solely to external proxy configuration files.
+
+\section{Conclusion and Future Work}
+\label{sec:future}
+This paper presented QUANTA, a policy-governed secure-channel architecture designed for hybrid post-quantum communications over standardized TLS 1.3 (RFC 8446) and RFC 10024. By coupling OpenSSL 3.6+ native C-introspection with strict fail-closed downgrade enforcement, 16~MiB bounded application framing (\texttt{QNT1}), and zero-secret telemetry, QUANTA resolves critical application-layer security vulnerabilities. Empirical benchmarking across 50 multi-process handshakes confirms that post-quantum hybrid protection incurs only a 145~$\mu$s median compute overhead while remaining completely invariant in 1-RTT network performance.
+
+Future work will investigate: (i) full post-quantum X.509 authentication integrating ML-DSA-65 certificate chains; (ii) formal protocol-state verification using ProVerif or Tamarin; and (iii) evaluation across constrained embedded IoT platforms and satellite links.
+
+\bibliographystyle{IEEEtran}
+\bibliography{references}
+
+\end{document}
